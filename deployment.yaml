@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: webapp
+  labels:
+    app: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      automountServiceAccountToken: false   # was: true (INSECURE)
+      serviceAccountName: webapp-sa
+      # hostPID: true                       # INSECURE: removed — exposes all host processes
+      # hostIPC: true                       # INSECURE: removed — shares host IPC namespace
+      # hostNetwork: false                  # left off entirely — default is false
+      containers:
+        - name: webapp
+          # was: nginx:latest (INSECURE: mutable tag, runs as root on port 80)
+          image: nginxinc/nginx-unprivileged:1.27
+          ports:
+            - containerPort: 8080           # unprivileged nginx listens on 8080, not 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"                   # was: missing (INSECURE: CPU DoS)
+              memory: "128Mi"               # was: missing (INSECURE: memory DoS)
+          securityContext:
+            privileged: false               # was: true (INSECURE)
+            runAsNonRoot: true              # was: false (INSECURE)
+            runAsUser: 101                  # was: 0 root (INSECURE) — 101 is nginx user in unprivileged image
+            runAsGroup: 101
+            allowPrivilegeEscalation: false # was: true (INSECURE)
+            readOnlyRootFilesystem: true    # was: false (INSECURE)
+            capabilities:
+              drop: [ALL]                   # was: add [NET_ADMIN, SYS_ADMIN] (INSECURE)
+            seccompProfile:
+              type: RuntimeDefault          # was: missing (INSECURE)
+          env:
+            # was: SECRET_KEY: "s3cr3t-hardcoded-value" (INSECURE: plaintext in pod spec)
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: webapp-secret       # managed by ESO, sourced from LocalStack Secrets Manager
+                  key: secret_key
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: webapp-secret
+                  key: db_password
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: nginx-cache
+              mountPath: /var/cache/nginx   # nginx needs to write cache — emptyDir keeps root FS read-only
+            - name: nginx-run
+              mountPath: /var/run
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}

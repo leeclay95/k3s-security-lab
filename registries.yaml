@@ -1,0 +1,8 @@
+mirrors:
+  "localhost:4566":
+    endpoint:
+      - "http://host.k3d.internal:4566"
+configs:
+  "host.k3d.internal:4566":
+    tls:
+      insecure: true

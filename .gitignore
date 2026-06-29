@@ -1,0 +1,35 @@
+# Terraform state — never commit, contains sensitive outputs and resource IDs
+*.tfstate
+*.tfstate.backup
+
+# Terraform working directories — restored by `terraform init`
+**/.terraform/
+
+# Variable files — may contain real credentials
+*.tfvars
+*.tfvars.json
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Claude Code session files
+.claude/
+
+# Editor swap and temp files
+*.swp
+*.swo
+*~
+.DS_Store
+*.sh
+CLAUDE*
+RESULTS*
+# Python cache
+__pycache__/
+*.pyc

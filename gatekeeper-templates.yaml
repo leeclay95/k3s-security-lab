@@ -1,0 +1,121 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblockprivileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockPrivileged
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblockprivileged
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          c.securityContext.privileged == true
+          msg := sprintf("Container '%v' is privileged — denied", [c.name])
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequirenonroot
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequireNonRoot
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequirenonroot
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          not c.securityContext.runAsNonRoot
+          msg := sprintf("Container '%v' must set runAsNonRoot: true", [c.name])
+        }
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          c.securityContext.runAsUser == 0
+          msg := sprintf("Container '%v' must not run as UID 0 (root)", [c.name])
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequirelimits
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequireLimits
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequirelimits
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          not c.resources.limits.memory
+          msg := sprintf("Container '%v' is missing memory limit", [c.name])
+        }
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          not c.resources.limits.cpu
+          msg := sprintf("Container '%v' is missing CPU limit", [c.name])
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblockhostnamespaces
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockHostNamespaces
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblockhostnamespaces
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostPID == true
+          msg := "hostPID: true is not allowed"
+        }
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostIPC == true
+          msg := "hostIPC: true is not allowed"
+        }
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostNetwork == true
+          msg := "hostNetwork: true is not allowed"
+        }
+---
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8sblockcaps
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sBlockCaps
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            forbiddenCaps:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sblockcaps
+        forbidden := input.parameters.forbiddenCaps
+        violation[{"msg": msg}] {
+          c := input.review.object.spec.containers[_]
+          cap := c.securityContext.capabilities.add[_]
+          cap == forbidden[_]
+          msg := sprintf("Container '%v' adds forbidden capability: %v", [c.name, cap])
+        }

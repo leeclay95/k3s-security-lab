@@ -1,0 +1,66 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sBlockPrivileged
+metadata:
+  name: block-privileged-containers
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - webapp
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireNonRoot
+metadata:
+  name: require-non-root
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - webapp
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireLimits
+metadata:
+  name: require-resource-limits
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - webapp
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sBlockHostNamespaces
+metadata:
+  name: block-host-namespaces
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - webapp
+---
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sBlockCaps
+metadata:
+  name: block-dangerous-caps
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+    namespaces:
+      - webapp
+  parameters:
+    forbiddenCaps:
+      - SYS_ADMIN
+      - NET_ADMIN
+      - SYS_PTRACE
+      - SYS_MODULE
+      - DAC_OVERRIDE
