@@ -1,6 +1,6 @@
 resource "null_resource" "k3d_cluster" {
   provisioner "local-exec" {
-    command = "k3d cluster create webapp-test --port 8080:80@loadbalancer --registry-config /home/kali/floci/k3-test/registries.yaml"
+    command = "k3d cluster create webapp-test --port 8080:80@loadbalancer --registry-config ${path.module}/../../registries.yaml"
   }
 
   provisioner "local-exec" {

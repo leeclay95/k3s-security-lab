@@ -1,7 +1,11 @@
+{{- if .Values.gatekeeper.enabled }}
 apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8sblockprivileged
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
 spec:
   crd:
     spec:
@@ -21,6 +25,9 @@ apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8srequirenonroot
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
 spec:
   crd:
     spec:
@@ -45,6 +52,9 @@ apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8srequirelimits
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
 spec:
   crd:
     spec:
@@ -69,6 +79,9 @@ apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8sblockhostnamespaces
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
 spec:
   crd:
     spec:
@@ -95,6 +108,9 @@ apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8sblockcaps
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
 spec:
   crd:
     spec:
@@ -119,3 +135,4 @@ spec:
           cap == forbidden[_]
           msg := sprintf("Container '%v' adds forbidden capability: %v", [c.name, cap])
         }
+{{- end }}

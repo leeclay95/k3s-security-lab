@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "webapp.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "webapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "webapp.selectorLabels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false   # no K8s API token in the container
+      serviceAccountName: {{ include "webapp.name" . }}-sa
+      containers:
+        - name: {{ include "webapp.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          resources:
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | quote }}
+              memory: {{ .Values.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | quote }}
+              memory: {{ .Values.resources.limits.memory | quote }}
+          securityContext:
+            privileged: false               # cannot access host devices or kernel capabilities
+            runAsNonRoot: true              # process cannot run as UID 0
+            runAsUser: 101                  # nginx user in nginx-unprivileged image
+            runAsGroup: 101
+            allowPrivilegeEscalation: false # setuid/setgid binaries cannot gain privileges
+            readOnlyRootFilesystem: true    # no writes to container filesystem
+            capabilities:
+              drop: [ALL]                   # no Linux capabilities
+            seccompProfile:
+              type: RuntimeDefault          # system call filtering
+          env:
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "webapp.name" . }}-secret
+                  key: secret_key
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "webapp.name" . }}-secret
+                  key: db_password
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "webapp.name" . }}-db-secret
+                  key: db_url
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.targetPort }}
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: nginx-cache
+              mountPath: /var/cache/nginx   # nginx needs write access — emptyDir keeps root FS read-only
+            - name: nginx-run
+              mountPath: /var/run
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
