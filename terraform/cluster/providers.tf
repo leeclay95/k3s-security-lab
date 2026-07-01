@@ -12,6 +12,10 @@ terraform {
       source  = "hashicorp/time"
       version = "~> 0.9"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -20,4 +24,9 @@ provider "helm" {
     config_path    = "~/.kube/config"
     config_context = "k3d-webapp-test"
   }
+}
+
+provider "kubernetes" {
+  config_path    = "~/.kube/config"
+  config_context = "k3d-webapp-test"
 }

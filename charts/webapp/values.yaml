@@ -18,6 +18,9 @@ resources:
 
 # -- Service configuration
 service:
+  # -- Set to false when the Service is managed as a native Terraform
+  # kubernetes_service resource instead (see deployment.enabled below).
+  enabled: true
   type: NodePort
   port: 80
   targetPort: 8080
@@ -25,6 +28,25 @@ service:
 
 # -- Replica count
 replicaCount: 1
+
+# -- Deployment management
+deployment:
+  # -- Set to false when the Deployment is managed as a native Terraform
+  # kubernetes_deployment resource instead (drift-detected on every plan,
+  # unlike this chart's copy which Helm only reconciles on helm upgrade).
+  enabled: true
+
+# -- ServiceAccount + RBAC management
+serviceAccount:
+  # -- Set to false when the ServiceAccount/Role/RoleBinding are managed as
+  # native Terraform resources instead (same drift-detection reasoning as above).
+  enabled: true
+
+# -- AWS credentials Secret for ESO (see eso.aws below for the values)
+awsCredentialsSecret:
+  # -- Set to false when this Secret is managed as a native Terraform
+  # kubernetes_secret resource instead.
+  enabled: true
 
 # -- External Secrets Operator configuration
 eso:

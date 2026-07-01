@@ -2,5 +2,5 @@ apiVersion: v2
 name: webapp
 description: Hardened nginx webapp with OPA Gatekeeper policies and External Secrets Operator integration
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "1.27"

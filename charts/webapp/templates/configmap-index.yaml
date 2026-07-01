@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "webapp.name" . }}-index-html
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>k3s security lab</title>
+      <style>
+        body {
+          background: #0d1117;
+          color: #c9d1d9;
+          font-family: monospace;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          margin: 0;
+        }
+        h1 { color: #58a6ff; }
+        p { color: #8b949e; }
+      </style>
+    </head>
+    <body>
+      <h1>testing 123 welcome</h1>
+    </body>
+    </html>
