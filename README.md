@@ -47,23 +47,24 @@ A fully automated Kubernetes security lab that deploys a hardened nginx webapp o
 │  k3d cluster: webapp-test                              │
 │                                                        │
 │  ┌───────────────────────────────────────────────┐    │
-│  │ gatekeeper-system                             │    │
+│  │ gatekeeper-system (Helm chart)                │    │
 │  │  Webhook: block-privileged, require-non-root, │    │
 │  │  require-limits, block-host-ns, block-caps    │    │
 │  └───────────────────────────────────────────────┘    │
 │                                                        │
 │  ┌───────────────────────────────────────────────┐    │
-│  │ external-secrets                              │    │
+│  │ external-secrets (Helm chart)                 │    │
 │  │  ESO controller → LocalStack STS → role creds │    │
 │  │  SecretStore → Secrets Manager → K8s Secrets  │    │
 │  └───────────────────────────────────────────────┘    │
 │                                                        │
 │  ┌───────────────────────────────────────────────┐    │
-│  │ webapp namespace                              │    │
+│  │ webapp namespace (Helm chart)                 │    │
 │  │  webapp-sa (automountServiceAccountToken=false│    │
 │  │  webapp pod (ECR image, readOnlyRootFilesystem│    │
 │  │    env: SECRET_KEY, DB_PASSWORD, DB_URL       │    │
 │  │    all from K8s Secrets managed by ESO        │    │
+│  │  Gatekeeper policies (hook-ordered)           │    │
 │  └───────────────────────────────────────────────┘    │
 │                                                        │
 │  NodePort 30080 → container 8080                       │
@@ -84,7 +85,6 @@ helm            # Helm 3
 kubesec         # Static manifest scanner
 tfsec           # Terraform static analysis
 aws             # AWS CLI v2 (uses AWS_ENDPOINT_URL env var for LocalStack)
-gh              # GitHub CLI (for repo management only)
 
 # LocalStack running with these services
 curl -s http://localhost:4566/_localstack/health | jq '.services | keys'
@@ -123,7 +123,7 @@ terraform apply -var="kms_key_arn=$(cd ../infra && terraform output -raw kms_key
 
 ### 3. Cluster (disposable — destroy and recreate freely)
 
-Three-pass required because Helm and Kubernetes providers validate against a live cluster at plan time:
+Two-pass apply — the Helm provider validates against a live cluster at plan time:
 
 ```bash
 cd terraform/cluster
@@ -132,11 +132,42 @@ terraform init
 # Pass 1 — create the cluster
 terraform apply -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
 
-# Pass 2 — Helm charts (Gatekeeper, ESO)
-terraform apply -target=helm_release.gatekeeper -target=helm_release.eso -target=null_resource.eso_endpoint -target=time_sleep.eso_ready -target=time_sleep.gatekeeper_ready
-
-# Pass 3 — everything else
+# Pass 2 — everything else (Helm charts: Gatekeeper, ESO, webapp)
 terraform apply
+```
+
+> **Note:** The previous 3-pass requirement is now reduced to 2 passes. Gatekeeper policies and ESO configuration are deployed by the webapp Helm chart with hook-based ordering, eliminating the separate kubectl apply steps.
+
+---
+
+## Helm Chart — `charts/webapp/`
+
+The webapp and all its supporting resources are packaged as a local Helm chart. This replaces the previous loose YAML files and `null_resource` + `kubectl apply` calls.
+
+### What's in the chart
+
+| Template | Resources |
+|---|---|
+| `deployment.yaml` | Hardened nginx-unprivileged deployment |
+| `service.yaml` | NodePort service (30080 → 8080) |
+| `serviceaccount.yaml` | ServiceAccount + zero-permission Role + RoleBinding |
+| `eso-aws-credentials.yaml` | AWS credentials Secret for ESO |
+| `eso-secretstore.yaml` | SecretStore with IAM role assumption |
+| `eso-externalsecret.yaml` | ExternalSecret for app secrets |
+| `eso-db-externalsecret.yaml` | ExternalSecret for DB credentials |
+| `gatekeeper-templates.yaml` | 5 ConstraintTemplates (Helm hook, weight 0) |
+| `gatekeeper-constraints.yaml` | 5 Constraints (Helm hook, weight 5) |
+
+### Customizing values
+
+Override defaults in `values.yaml` or pass via Terraform `set {}` blocks:
+
+```bash
+# Preview rendered templates
+helm template webapp charts/webapp/ --debug
+
+# Disable Gatekeeper policies (e.g., for testing)
+helm template webapp charts/webapp/ --set gatekeeper.enabled=false
 ```
 
 ---
@@ -169,7 +200,7 @@ kubectl run badpod -n webapp --image=nginx --overrides='{"spec":{"containers":[{
 # Error from server: admission webhook denied the request
 
 # See the violation recorded on the constraint
-kubectl describe k8sblockprivileged.constraints.gatekeeper.sh/block-privileged
+kubectl describe k8sblockprivileged.constraints.gatekeeper.sh/block-privileged-containers
 kubectl get events -n webapp --field-selector reason=FailedCreate
 
 # Restore clean state
@@ -179,8 +210,8 @@ cd terraform/cluster && terraform apply
 ### kubesec — static manifest score
 
 ```bash
-./scan.sh
-# deployment.yaml score: +12 (was -85 before hardening)
+kubesec scan examples/hardened/deployment.yaml
+# score: +12 (was -85 before hardening)
 ```
 
 ### ESO — secret rotation test
@@ -193,16 +224,17 @@ aws --endpoint-url=http://localhost:4566 secretsmanager put-secret-value --secre
 kubectl get secret webapp-secret -n webapp -w
 ```
 
-### Drift — Terraform detects and reverts manual changes
+### Helm lifecycle
 
 ```bash
-# Manually add an insecure setting
-kubectl patch deployment webapp -n webapp --patch '{"spec":{"template":{"spec":{"containers":[{"name":"webapp","securityContext":{"privileged":true}}]}}}}'
-# Blocked by Gatekeeper — confirms the webhook is live
+# View release status
+helm list -n webapp
 
-# If not blocked (e.g. on a non-webhook path), Terraform plan shows drift
-cd terraform/cluster && terraform plan
-terraform apply  # reverts to hardened state
+# Rollback to previous version
+helm rollback webapp -n webapp
+
+# Show diff before upgrade
+helm diff upgrade webapp charts/webapp/ -n webapp
 ```
 
 ---
@@ -211,7 +243,7 @@ terraform apply  # reverts to hardened state
 
 ```bash
 # App
-curl http://172.24.0.2:30080
+curl http://localhost:30080
 
 # Pod status + image
 kubectl get pods -n webapp -o wide
@@ -224,6 +256,9 @@ kubectl get secret webapp-secret webapp-db-secret -n webapp
 # Gatekeeper constraints
 kubectl get constraints
 kubectl get constrainttemplates
+
+# Helm releases
+helm list -A
 
 # IAM role assumption (what ESO does each sync)
 aws --endpoint-url=http://localhost:4566 sts assume-role --role-arn arn:aws:iam::000000000000:role/eso-role --role-session-name test
@@ -238,20 +273,40 @@ aws --endpoint-url=http://localhost:4566 ecr get-login-password | docker login -
 
 ```
 .
-├── deployment.yaml          # Hardened nginx deployment (insecure settings commented inline)
-├── service.yaml             # NodePort 30080 → container 8080
-├── serviceaccount.yaml      # webapp-sa + zero-permission Role + RoleBinding
-├── namespace.yaml           # webapp namespace
-├── gatekeeper-templates.yaml  # 5 ConstraintTemplates (applied before constraints)
-├── gatekeeper-constraints.yaml # 5 Constraints scoped to webapp namespace
-├── eso-secretstore.yaml     # SecretStore with IAM role assumption
-├── eso-externalsecret.yaml  # Syncs webapp/secrets → webapp-secret
-├── eso-db-externalsecret.yaml # Syncs webapp/db-credentials → webapp-db-secret
-├── registries.yaml          # k3d registry mirror config for LocalStack ECR
-├── scan.sh                  # kubesec batch scan script
-├── RESULTS.md               # Full build log with errors and fixes
+├── charts/
+│   └── webapp/                      # Helm chart — all K8s resources for the webapp
+│       ├── Chart.yaml
+│       ├── values.yaml              # Parameterized defaults (image, resources, ESO, Gatekeeper)
+│       └── templates/
+│           ├── _helpers.tpl
+│           ├── deployment.yaml      # Hardened nginx deployment
+│           ├── service.yaml         # NodePort 30080 → container 8080
+│           ├── serviceaccount.yaml  # webapp-sa + zero-permission Role + RoleBinding
+│           ├── eso-aws-credentials.yaml
+│           ├── eso-secretstore.yaml
+│           ├── eso-externalsecret.yaml
+│           ├── eso-db-externalsecret.yaml
+│           ├── gatekeeper-templates.yaml   # 5 ConstraintTemplates (hook weight 0)
+│           └── gatekeeper-constraints.yaml # 5 Constraints (hook weight 5)
+├── examples/
+│   ├── hardened/                    # Reference YAML — the hardened manifests for kubesec scoring
+│   │   ├── deployment.yaml
+│   │   ├── service.yaml
+│   │   ├── serviceaccount.yaml
+│   │   └── namespace.yaml
+│   ├── insecure/
+│   │   └── secret-bad.yaml          # Teaching example: plaintext secrets (DO NOT USE)
+│   └── reference/
+│       └── gatekeeper-policies.yaml # Combined template+constraint reference file
+├── registries.yaml                  # k3d registry mirror config for LocalStack ECR
 └── terraform/
-    ├── infra/               # KMS, IAM, ECR, RDS, CloudWatch, SNS
-    ├── secrets/             # Secrets Manager secrets (prevent_destroy)
-    └── cluster/             # k3d cluster, Gatekeeper, ESO, webapp
+    ├── secrets/                     # Persistent — Secrets Manager secrets (prevent_destroy)
+    ├── infra/                       # Persistent — KMS, IAM, ECR, RDS, CloudWatch, SNS
+    └── cluster/                     # Disposable — k3d cluster + 3 Helm releases
+        ├── cluster.tf               # k3d cluster create/destroy
+        ├── gatekeeper.tf            # Gatekeeper Helm chart
+        ├── eso.tf                   # ESO Helm chart (with extraEnv for LocalStack)
+        ├── webapp.tf                # Webapp Helm chart (single helm_release)
+        ├── providers.tf             # Helm + null + time providers
+        └── outputs.tf               # App URL, Helm release name
 ```

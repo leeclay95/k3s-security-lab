@@ -1,3 +1,8 @@
+# Gatekeeper Helm chart installs the admission webhook controller.
+# Gatekeeper policies (ConstraintTemplates + Constraints) are now deployed
+# by the webapp Helm chart using hook annotations for proper CRD ordering,
+# eliminating the previous null_resource + kubectl + time_sleep chain.
+
 resource "helm_release" "gatekeeper" {
   depends_on       = [time_sleep.cluster_ready]
   name             = "gatekeeper"
@@ -12,38 +17,4 @@ resource "helm_release" "gatekeeper" {
 resource "time_sleep" "gatekeeper_ready" {
   depends_on      = [helm_release.gatekeeper]
   create_duration = "15s"
-}
-
-# null_resource + kubectl avoids kubernetes_manifest plan-time CRD validation.
-# ConstraintTemplates create the Constraint CRDs dynamically at apply time,
-# so kubernetes_manifest can never plan them in the same run.
-resource "null_resource" "gatekeeper_templates" {
-  depends_on = [time_sleep.gatekeeper_ready]
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f /home/kali/floci/k3-test/gatekeeper-templates.yaml"
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "kubectl delete -f /home/kali/floci/k3-test/gatekeeper-templates.yaml --ignore-not-found"
-  }
-}
-
-resource "time_sleep" "crds_ready" {
-  depends_on      = [null_resource.gatekeeper_templates]
-  create_duration = "10s"
-}
-
-resource "null_resource" "gatekeeper_constraints" {
-  depends_on = [time_sleep.crds_ready]
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f /home/kali/floci/k3-test/gatekeeper-constraints.yaml"
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    command = "kubectl delete -f /home/kali/floci/k3-test/gatekeeper-constraints.yaml --ignore-not-found"
-  }
 }

@@ -1,0 +1,79 @@
+# -- Webapp Helm Chart Values
+# All security controls are enforced by default. Override values per-environment as needed.
+
+# -- Container image configuration
+image:
+  repository: 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:5100/webapp/nginx
+  tag: "1.27"
+  pullPolicy: IfNotPresent
+
+# -- Pod resource requests and limits (required by Gatekeeper policy)
+resources:
+  requests:
+    cpu: "100m"
+    memory: "64Mi"
+  limits:
+    cpu: "250m"
+    memory: "128Mi"
+
+# -- Service configuration
+service:
+  # -- Set to false when the Service is managed as a native Terraform
+  # kubernetes_service resource instead (see deployment.enabled below).
+  enabled: true
+  type: NodePort
+  port: 80
+  targetPort: 8080
+  nodePort: 30080
+
+# -- Replica count
+replicaCount: 1
+
+# -- Deployment management
+deployment:
+  # -- Set to false when the Deployment is managed as a native Terraform
+  # kubernetes_deployment resource instead (drift-detected on every plan,
+  # unlike this chart's copy which Helm only reconciles on helm upgrade).
+  enabled: true
+
+# -- ServiceAccount + RBAC management
+serviceAccount:
+  # -- Set to false when the ServiceAccount/Role/RoleBinding are managed as
+  # native Terraform resources instead (same drift-detection reasoning as above).
+  enabled: true
+
+# -- AWS credentials Secret for ESO (see eso.aws below for the values)
+awsCredentialsSecret:
+  # -- Set to false when this Secret is managed as a native Terraform
+  # kubernetes_secret resource instead.
+  enabled: true
+
+# -- External Secrets Operator configuration
+eso:
+  # -- IAM role ARN for SecretStore role assumption
+  roleArn: "arn:aws:iam::000000000000:role/eso-role"
+  # -- AWS region for Secrets Manager
+  region: us-east-1
+  # -- How often ESO re-syncs secrets from Secrets Manager
+  refreshInterval: 1m
+  secrets:
+    # -- Secrets Manager secret name for app secrets (db_password, api_key, secret_key)
+    appSecret: webapp/secrets
+    # -- Secrets Manager secret name for DB credentials (db_url, db_host, db_password)
+    dbSecret: webapp/db-credentials
+  # -- AWS credentials for ESO (static creds that can only sts:AssumeRole)
+  aws:
+    accessKey: test
+    secretAccessKey: test
+
+# -- OPA Gatekeeper policy configuration
+gatekeeper:
+  # -- Enable Gatekeeper ConstraintTemplates and Constraints
+  enabled: true
+  # -- Linux capabilities blocked by the block-dangerous-caps constraint
+  forbiddenCaps:
+    - SYS_ADMIN
+    - NET_ADMIN
+    - SYS_PTRACE
+    - SYS_MODULE
+    - DAC_OVERRIDE

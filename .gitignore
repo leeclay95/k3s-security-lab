@@ -1,6 +1,7 @@
 # Terraform state — never commit, contains sensitive outputs and resource IDs
 *.tfstate
 *.tfstate.backup
+*.tfstate.*.backup
 
 # Terraform working directories — restored by `terraform init`
 **/.terraform/
