@@ -1,0 +1,74 @@
+# Standalone ConfigMap for the config-drift demo.
+#
+# This is deliberately NOT part of the Helm chart or Terraform. You apply it by
+# hand and mount it onto the already-live webapp Deployment to simulate an
+# out-of-band change ("drift"). Terraform manages the Deployment as a native
+# kubernetes_deployment resource, so the next `terraform plan` sees the extra
+# volume/mount you added and `terraform apply` reverts it.
+#
+# See the "Config drift demo" section of the README for the full walkthrough.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: matrix-index-html
+  namespace: webapp
+  labels:
+    app: webapp
+    demo: config-drift
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>k3s security lab // the matrix has you</title>
+      <style>
+        html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+        canvas { display: block; }
+        .hud {
+          position: fixed; inset: 0; display: flex; flex-direction: column;
+          align-items: center; justify-content: center; pointer-events: none;
+          font-family: "Courier New", monospace; color: #00ff41;
+          text-shadow: 0 0 8px #00ff41, 0 0 20px #00b32d;
+        }
+        .hud h1 { font-size: clamp(1.6rem, 6vw, 3.4rem); margin: 0; letter-spacing: .15em; }
+        .hud p  { font-size: clamp(.8rem, 2.4vw, 1.1rem); margin: .6rem 0 0; opacity: .85; letter-spacing: .3em; }
+        .tag {
+          margin-top: 1.4rem; font-size: .8rem; opacity: .6; letter-spacing: .2em;
+          border: 1px solid #00ff4155; padding: .4rem .9rem; border-radius: 4px;
+        }
+      </style>
+    </head>
+    <body>
+      <canvas id="matrix"></canvas>
+      <div class="hud">
+        <h1>WAKE UP, NEO...</h1>
+        <p>THIS PAGE IS DRIFT</p>
+        <div class="tag">mounted out-of-band &mdash; terraform apply will revert it</div>
+      </div>
+      <script>
+        const c = document.getElementById('matrix');
+        const ctx = c.getContext('2d');
+        let cols, drops;
+        const glyphs = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈ0123456789ABCDEF@#$%'.split('');
+        const fontSize = 16;
+        function resize() {
+          c.width = window.innerWidth; c.height = window.innerHeight;
+          cols = Math.floor(c.width / fontSize); drops = Array(cols).fill(1);
+        }
+        function draw() {
+          ctx.fillStyle = 'rgba(0,0,0,0.06)';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.fillStyle = '#00ff41'; ctx.font = fontSize + 'px monospace';
+          for (let i = 0; i < drops.length; i++) {
+            const ch = glyphs[Math.floor(Math.random() * glyphs.length)];
+            ctx.fillText(ch, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > c.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+          }
+        }
+        window.addEventListener('resize', resize); resize(); setInterval(draw, 45);
+      </script>
+    </body>
+    </html>

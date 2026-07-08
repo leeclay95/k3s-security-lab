@@ -26,14 +26,23 @@ KUBECTL    := kubectl --context k3d-webapp-test
 # so we reuse the running stack instead of spawning a port-4566 duplicate.
 COMPOSE    := docker compose -p floci
 
+# Secret values fed to the infra/secrets roots. Default to the documented lab
+# examples; override on the CLI for real values, e.g.
+#   make deploy DB_PASSWORD=... API_KEY=... SECRET_KEY=...
+# Pass the SAME values every run — re-applying with different ones rewrites the
+# secrets in floci.
+DB_PASSWORD ?= hunter2
+API_KEY     ?= abc123
+SECRET_KEY  ?= s3cr3t
+
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy floci-up floci-down status url redeploy-webapp infra secrets clean
+.PHONY: help deploy destroy bootstrap floci-up floci-down status url redeploy-webapp infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-deploy: floci-up ## Start floci + create cluster + install Helm charts + deploy webapp (one command)
+deploy: bootstrap ## Full ordered deploy: floci + secrets + infra + cluster + webapp
 	cd $(TF_CLUSTER) && $(TF) init -input=false
 	@echo "==> Pass 1/3: create the k3d cluster"
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
@@ -51,6 +60,14 @@ floci-up: ## Start the floci AWS emulator (:4566) via docker compose
 
 floci-down: ## Stop the floci AWS emulator
 	$(COMPOSE) down
+
+bootstrap: floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the required order
+	@echo "==> floci up; applying secrets (pass 1, no KMS)"
+	cd $(TF_SECRETS) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"
+	@echo "==> applying infra (KMS, IAM role for ESO, ECR, RDS)"
+	cd $(TF_INFRA) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)"
+	@echo "==> re-applying secrets WITH KMS from infra output"
+	cd $(TF_SECRETS) && $(TF) apply $(APPROVE) -var="kms_key_arn=$$(cd ../infra && $(TF) output -raw kms_key_arn)" -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"
 
 redeploy-webapp: ## Reapply only the webapp Deployment/Service (revert drift)
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=kubernetes_deployment.webapp -target=kubernetes_service.webapp
@@ -71,11 +88,11 @@ url: ## Print the webapp URL
 # roots take sensitive vars — supply them via a gitignored terraform.tfvars in
 # each root (or -var on the CLI). Apply order is: infra -> secrets -> deploy.
 
-infra: ## Apply terraform/infra (KMS, IAM, ECR, RDS) — needs terraform.tfvars
-	cd $(TF_INFRA) && $(TF) init -input=false && $(TF) apply $(APPROVE)
+infra: ## Apply terraform/infra only (KMS, IAM, ECR, RDS)
+	cd $(TF_INFRA) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)"
 
-secrets: ## Apply terraform/secrets (Secrets Manager) — needs terraform.tfvars
-	cd $(TF_SECRETS) && $(TF) init -input=false && $(TF) apply $(APPROVE)
+secrets: ## Apply terraform/secrets only (Secrets Manager, no KMS) — see bootstrap for the full order
+	cd $(TF_SECRETS) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"
 
 clean: ## Remove local terraform state backups
 	find $(TF) -name 'terraform.tfstate.*.backup' -delete

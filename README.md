@@ -97,6 +97,13 @@ curl -s http://localhost:4566/_localstack/health | jq '.services | keys'
 
 Three independent Terraform roots applied in sequence. Each root is isolated so secrets and infrastructure survive cluster destroy/recreate.
 
+> **TL;DR:** `make deploy` runs this entire chain in order for you — floci →
+> secrets → infra → secrets (re-applied with KMS) → cluster (staged). Secret
+> values default to the lab examples; override with
+> `make deploy DB_PASSWORD=… API_KEY=… SECRET_KEY=…`. The manual steps below are
+> the reference for what it automates and why the order matters (infra's IAM
+> policy reads the `webapp/secrets` secret, so **secrets must exist first**).
+
 ### 1. Secrets (persistent — apply once)
 
 ```bash
@@ -237,6 +244,44 @@ kubectl get events -n webapp --field-selector reason=FailedCreate
 # Restore clean state
 cd terraform/cluster && terraform apply
 ```
+
+### Config drift — Terraform detects and reverts out-of-band changes
+
+The webapp `Deployment` is a native `kubernetes_deployment` resource, so
+Terraform reads the live object on every plan and reverts anything changed
+outside of Terraform. This demo mounts a standalone ConfigMap
+(`examples/matrix-configmap.yaml`) onto the running Deployment by hand, then
+lets Terraform undo it.
+
+```bash
+# 1. Baseline — the default nginx page
+curl -s http://localhost:30080 | grep -o '<title>.*</title>'      # Welcome to nginx!
+
+# 2. Introduce drift: apply the ConfigMap and mount it at nginx's docroot,
+#    directly on the live Deployment (not via Terraform)
+kubectl apply -f examples/matrix-configmap.yaml
+kubectl patch deployment webapp -n webapp --type=strategic -p '{"spec":{"template":{"spec":{"volumes":[{"name":"matrix-html","configMap":{"name":"matrix-index-html"}}],"containers":[{"name":"webapp","volumeMounts":[{"name":"matrix-html","mountPath":"/usr/share/nginx/html","readOnly":true}]}]}}}}'
+kubectl rollout status deployment/webapp -n webapp
+curl -s http://localhost:30080 | grep -o '<title>.*</title>'      # ...the matrix has you
+
+# 3. Terraform SEES the drift
+cd terraform/cluster
+terraform plan                                                    # kubernetes_deployment.webapp will be updated in-place (removes matrix-html mount)
+
+# 4. Terraform BRINGS IT BACK
+terraform apply                                                   # or: make redeploy-webapp
+kubectl rollout status deployment/webapp -n webapp
+curl -s http://localhost:30080 | grep -o '<title>.*</title>'      # Welcome to nginx! (reverted)
+
+# 5. (optional) remove the leftover ConfigMap — Terraform doesn't manage it,
+#    so it lingers harmlessly after the Deployment mount is reverted
+kubectl delete -f examples/matrix-configmap.yaml
+```
+
+> **Why this works:** only the *mount* on the Deployment is Terraform-managed
+> state, so `terraform apply` strips it back to the declared spec. The
+> ConfigMap object itself was never in Terraform, so it's left untouched — a
+> good illustration of drift being scoped to what Terraform actually owns.
 
 ### kubesec — static manifest score
 
