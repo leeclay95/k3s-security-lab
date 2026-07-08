@@ -145,6 +145,30 @@ terraform apply -target=null_resource.k3d_cluster -target=time_sleep.cluster_rea
 terraform apply
 ```
 
+### Destroy and recreate the cluster
+
+`make destroy` removes only the k3d cluster — `terraform/secrets` and
+`terraform/infra` (LocalStack secrets, KMS, RDS, etc.) survive, so the recreate
+picks them straight back up.
+
+```bash
+make destroy            # tear down the cluster
+make deploy             # bring it back (cluster + Helm charts + webapp)
+
+make destroy && make deploy   # or both in one line
+```
+
+After it comes back up:
+
+```bash
+make status             # pods, ExternalSecrets, Gatekeeper constraints
+make url                # prints http://localhost:30080
+```
+
+> **Note:** LocalStack must be running before `make deploy` (`docker ps | grep
+> localstack`), or ESO reports `SecretSyncedError` and the webapp pod won't
+> receive its secrets.
+
 ---
 
 ## Helm Chart — `charts/webapp/`
