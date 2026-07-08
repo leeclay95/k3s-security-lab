@@ -123,20 +123,27 @@ terraform apply -var="kms_key_arn=$(cd ../infra && terraform output -raw kms_key
 
 ### 3. Cluster (disposable — destroy and recreate freely)
 
-Two-pass apply — the Helm provider validates against a live cluster at plan time:
+One command from the repo root — the `Makefile` runs the staged apply for you:
 
 ```bash
-cd terraform/cluster
-terraform init
-
-# Pass 1 — create the cluster
-terraform apply -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
-
-# Pass 2 — everything else (Helm charts: Gatekeeper, ESO, webapp)
-terraform apply
+make deploy     # create cluster, install Helm charts (Gatekeeper, ESO, webapp), deploy webapp
+make destroy    # tear down the cluster (secrets/ and infra/ survive)
+make status     # pods, ExternalSecrets, Gatekeeper constraints
+make url        # print the webapp URL
 ```
 
-> **Note:** The previous 3-pass requirement is now reduced to 2 passes. Gatekeeper policies and ESO configuration are deployed by the webapp Helm chart with hook-based ordering, eliminating the separate kubectl apply steps.
+`make deploy` stages the apply internally because the Helm and Kubernetes
+providers validate against a **live** cluster at plan time: it creates the k3d
+cluster first (`-target`), then installs the Gatekeeper + ESO controllers, then
+runs the final unconstrained apply for the webapp and everything else.
+
+To run it by hand instead:
+
+```bash
+cd terraform/cluster && terraform init
+terraform apply -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
+terraform apply
+```
 
 ---
 
