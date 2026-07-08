@@ -70,6 +70,11 @@ eso:
 gatekeeper:
   # -- Enable Gatekeeper ConstraintTemplates and Constraints
   enabled: true
+  # -- Use Helm hooks to order ConstraintTemplates before Constraints (standalone
+  # `helm install`). Set false when deployed by Argo CD, which orders them with
+  # sync-waves instead (see values-argocd.yaml). Sync-wave annotations are always
+  # emitted and are harmless to Helm.
+  helmHooks: true
   # -- Linux capabilities blocked by the block-dangerous-caps constraint
   forbiddenCaps:
     - SYS_ADMIN

@@ -4,8 +4,13 @@ kind: K8sBlockPrivileged
 metadata:
   name: block-privileged-containers
   annotations:
+    # Argo CD: applied in wave 1, after the ConstraintTemplates (wave 0) have
+    # registered their CRDs (Argo gates on ConstraintTemplate health between waves).
+    argocd.argoproj.io/sync-wave: "1"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
+{{- end }}
 spec:
   match:
     kinds:
@@ -19,8 +24,13 @@ kind: K8sRequireNonRoot
 metadata:
   name: require-non-root
   annotations:
+    # Argo CD: applied in wave 1, after the ConstraintTemplates (wave 0) have
+    # registered their CRDs (Argo gates on ConstraintTemplate health between waves).
+    argocd.argoproj.io/sync-wave: "1"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
+{{- end }}
 spec:
   match:
     kinds:
@@ -34,8 +44,13 @@ kind: K8sRequireLimits
 metadata:
   name: require-resource-limits
   annotations:
+    # Argo CD: applied in wave 1, after the ConstraintTemplates (wave 0) have
+    # registered their CRDs (Argo gates on ConstraintTemplate health between waves).
+    argocd.argoproj.io/sync-wave: "1"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
+{{- end }}
 spec:
   match:
     kinds:
@@ -49,8 +64,13 @@ kind: K8sBlockHostNamespaces
 metadata:
   name: block-host-namespaces
   annotations:
+    # Argo CD: applied in wave 1, after the ConstraintTemplates (wave 0) have
+    # registered their CRDs (Argo gates on ConstraintTemplate health between waves).
+    argocd.argoproj.io/sync-wave: "1"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
+{{- end }}
 spec:
   match:
     kinds:
@@ -64,8 +84,13 @@ kind: K8sBlockCaps
 metadata:
   name: block-dangerous-caps
   annotations:
+    # Argo CD: applied in wave 1, after the ConstraintTemplates (wave 0) have
+    # registered their CRDs (Argo gates on ConstraintTemplate health between waves).
+    argocd.argoproj.io/sync-wave: "1"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
+{{- end }}
 spec:
   match:
     kinds:

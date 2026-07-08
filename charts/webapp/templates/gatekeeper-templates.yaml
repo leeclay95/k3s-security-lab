@@ -4,8 +4,12 @@ kind: ConstraintTemplate
 metadata:
   name: k8sblockprivileged
   annotations:
+    # Argo CD: ConstraintTemplates first (wave 0), Constraints after (wave 1).
+    argocd.argoproj.io/sync-wave: "0"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
+{{- end }}
 spec:
   crd:
     spec:
@@ -26,8 +30,12 @@ kind: ConstraintTemplate
 metadata:
   name: k8srequirenonroot
   annotations:
+    # Argo CD: ConstraintTemplates first (wave 0), Constraints after (wave 1).
+    argocd.argoproj.io/sync-wave: "0"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
+{{- end }}
 spec:
   crd:
     spec:
@@ -53,8 +61,12 @@ kind: ConstraintTemplate
 metadata:
   name: k8srequirelimits
   annotations:
+    # Argo CD: ConstraintTemplates first (wave 0), Constraints after (wave 1).
+    argocd.argoproj.io/sync-wave: "0"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
+{{- end }}
 spec:
   crd:
     spec:
@@ -80,8 +92,12 @@ kind: ConstraintTemplate
 metadata:
   name: k8sblockhostnamespaces
   annotations:
+    # Argo CD: ConstraintTemplates first (wave 0), Constraints after (wave 1).
+    argocd.argoproj.io/sync-wave: "0"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
+{{- end }}
 spec:
   crd:
     spec:
@@ -109,8 +125,12 @@ kind: ConstraintTemplate
 metadata:
   name: k8sblockcaps
   annotations:
+    # Argo CD: ConstraintTemplates first (wave 0), Constraints after (wave 1).
+    argocd.argoproj.io/sync-wave: "0"
+{{- if .Values.gatekeeper.helmHooks }}
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
+{{- end }}
 spec:
   crd:
     spec:

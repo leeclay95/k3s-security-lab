@@ -37,7 +37,7 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy bootstrap floci-up floci-down status url redeploy-webapp infra secrets clean
+.PHONY: help deploy destroy bootstrap floci-up floci-down argo-app argo-ui status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -46,11 +46,11 @@ deploy: bootstrap ## Full ordered deploy: floci + secrets + infra + cluster + we
 	cd $(TF_CLUSTER) && $(TF) init -input=false
 	@echo "==> Pass 1/3: create the k3d cluster"
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
-	@echo "==> Pass 2/3: install Gatekeeper + ESO controllers"
-	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=helm_release.gatekeeper -target=time_sleep.gatekeeper_ready -target=helm_release.eso -target=time_sleep.eso_ready
-	@echo "==> Pass 3/3: webapp chart + Deployment/Service + everything else"
+	@echo "==> Pass 2/3: install Gatekeeper + ESO + Argo CD controllers"
+	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=helm_release.gatekeeper -target=time_sleep.gatekeeper_ready -target=helm_release.eso -target=time_sleep.eso_ready -target=helm_release.argocd -target=time_sleep.argocd_ready
+	@echo "==> Pass 3/3: import image + plant Argo Application (Argo then syncs the webapp from Git)"
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE)
-	@echo "==> Done. App: $$(cd $(TF_CLUSTER) && $(TF) output -raw app_url)"
+	@echo "==> Done. App: $$(cd $(TF_CLUSTER) && $(TF) output -raw app_url) (owned by Argo CD)"
 
 destroy: ## Tear down the k3d cluster (secrets/ and infra/ are left intact)
 	cd $(TF_CLUSTER) && $(TF) destroy $(APPROVE)
@@ -69,18 +69,27 @@ bootstrap: floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the r
 	@echo "==> re-applying secrets WITH KMS from infra output"
 	cd $(TF_SECRETS) && $(TF) apply $(APPROVE) -var="kms_key_arn=$$(cd ../infra && $(TF) output -raw kms_key_arn)" -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"
 
-redeploy-webapp: ## Reapply only the webapp Deployment/Service (revert drift)
-	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=kubernetes_deployment.webapp -target=kubernetes_service.webapp
+argo-app: ## Show the webapp Argo CD Application (sync/health + managed resources)
+	-$(KUBECTL) get application webapp -n argocd -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
+	@echo "---"
+	-$(KUBECTL) get application webapp -n argocd -o jsonpath='{range .status.resources[*]}{.kind}/{.name}  {.status}{"\n"}{end}'
+
+argo-ui: ## Port-forward the Argo CD UI to https://localhost:8081
+	@echo "Argo CD UI -> https://localhost:8081 (user: admin)"
+	@echo "password: kubectl --context k3d-webapp-test -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
+	$(KUBECTL) port-forward -n argocd svc/argocd-server 8081:443
 
 # Leading '-' makes make ignore each command's exit code: status is read-only,
 # so a transient hiccup (e.g. the 'constraints' aggregate category not yet in
 # kubectl's discovery cache right after a fresh deploy) shouldn't fail the target.
-status: ## Show cluster / webapp / ESO / Gatekeeper state
+status: ## Show cluster / webapp / ESO / Gatekeeper / Argo state
 	-$(KUBECTL) get pods -A
 	@echo "---"
 	-$(KUBECTL) get externalsecret,secretstore -n webapp
 	@echo "---"
 	-$(KUBECTL) get constraints
+	@echo "---"
+	-$(KUBECTL) get application webapp -n argocd -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
 
 url: ## Print the webapp URL
 	@cd $(TF_CLUSTER) && $(TF) output -raw app_url

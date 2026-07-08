@@ -1,0 +1,24 @@
+# Values for the Argo CD-managed deployment of this chart.
+#
+# Under GitOps, Argo CD owns the WHOLE chart (app + ESO config + Gatekeeper
+# policies), so the app objects stay enabled (chart defaults) and are NOT
+# supplied by Terraform. The only real override vs. the chart defaults is
+# gatekeeper.helmHooks=false: Argo orders ConstraintTemplates before Constraints
+# with sync-waves instead of Helm hooks.
+#
+# floci is deterministic (account 000000000000, role/eso-role, fixed ECR path),
+# so these values are safe to pin here rather than inject from Terraform.
+
+image:
+  repository: 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:5100/webapp/nginx
+  tag: "1.27"
+  pullPolicy: IfNotPresent
+
+eso:
+  roleArn: "arn:aws:iam::000000000000:role/eso-role"
+  region: us-east-1
+
+gatekeeper:
+  enabled: true
+  # Argo CD uses sync-waves, not Helm hooks, to order templates -> constraints.
+  helmHooks: false

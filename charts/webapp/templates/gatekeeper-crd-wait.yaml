@@ -1,4 +1,7 @@
-{{- if .Values.gatekeeper.enabled }}
+{{- if and .Values.gatekeeper.enabled .Values.gatekeeper.helmHooks }}
+# Only needed for the Helm-hook install path. Under Argo CD (helmHooks=false)
+# sync-waves order ConstraintTemplates (wave 0) before Constraints (wave 1) and
+# Argo gates on ConstraintTemplate health, so this wait Job is not rendered.
 # Gatekeeper dynamically provisions a CRD per ConstraintTemplate (hook weight 0).
 # That provisioning — and, on upgrade, the delete-then-recreate of the CRD when
 # the ConstraintTemplate is re-applied — is asynchronous. Without a pause here,

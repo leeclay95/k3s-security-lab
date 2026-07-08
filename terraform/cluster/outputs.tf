@@ -3,7 +3,7 @@ output "app_url" {
   description = "Webapp URL via NodePort — accessible from the Docker host"
 }
 
-output "helm_release" {
-  value       = helm_release.webapp.name
-  description = "Helm release name for the webapp chart"
+output "webapp_owner" {
+  value       = "argocd/Application:webapp (GitOps) — see: kubectl get application webapp -n argocd"
+  description = "The webapp is reconciled by Argo CD, not Terraform"
 }

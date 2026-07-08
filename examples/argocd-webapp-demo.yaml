@@ -1,0 +1,46 @@
+# Argo CD drift demo for the REAL webapp chart — safe to run on a cluster where
+# Terraform still owns the live `webapp` namespace.
+#
+# It deploys charts/webapp into an isolated `webapp-argo` namespace so it does
+# NOT fight the Terraform-managed webapp. Two overrides vs. values-argocd.yaml
+# keep it collision-free on a shared cluster:
+#   - gatekeeper.enabled=false : the Gatekeeper ConstraintTemplates/Constraints
+#     are cluster-scoped with fixed names and already exist (owned by the live
+#     release), so the demo does not re-create them.
+#   - service.nodePort=30081   : avoids clashing with the live Service on 30080.
+#
+# ESO stays enabled: SecretStore/ExternalSecrets are namespaced, so the demo
+# syncs its own copies of the secrets from floci into webapp-argo.
+#
+# This is a DEMO artifact. The real migration Application is argocd/webapp-application.yaml.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: webapp-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/leeclay95/k3s-security-lab.git
+    targetRevision: main
+    path: charts/webapp
+    helm:
+      valueFiles:
+        - values-argocd.yaml
+      parameters:
+        - name: gatekeeper.enabled
+          value: "false"
+        - name: service.nodePort
+          value: "30081"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: webapp-argo
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

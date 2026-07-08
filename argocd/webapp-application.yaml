@@ -1,0 +1,38 @@
+# Argo CD Application — the GitOps owner of the webapp.
+#
+# This replaces Terraform's management of the webapp app-layer. Argo renders the
+# whole charts/webapp chart from Git and continuously reconciles it: any
+# out-of-band kubectl edit/patch to the live objects is reverted within seconds
+# by selfHeal, and objects deleted from Git are removed by prune.
+#
+# Terraform's job is now only day-0 platform: it installs Argo CD and applies
+# THIS manifest (see terraform/cluster/argocd.tf). The webapp namespace has a
+# single owner — Argo.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: webapp
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/leeclay95/k3s-security-lab.git
+    targetRevision: main
+    path: charts/webapp
+    helm:
+      valueFiles:
+        - values-argocd.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: webapp
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      # ServerSideApply avoids the client-side annotation size limit on the
+      # large Gatekeeper ConstraintTemplate CRDs.
+      - ServerSideApply=true
