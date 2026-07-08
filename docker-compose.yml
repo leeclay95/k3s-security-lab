@@ -1,0 +1,13 @@
+services:
+  floci:
+    image: floci/floci:latest
+    ports:
+      - "4566:4566"
+    environment:
+      - FLOCI_IAM_ENFORCE=true # THIS IS THE KEY
+      - FLOCI_STORAGE_MODE=hybrid
+      - FLOCI_STORAGE_PERSISTENT_PATH=/data
+      - FLOCI_SERVICES_LAMBDA_DOCKER_NETWORK=floci_default
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./floci-data:/data

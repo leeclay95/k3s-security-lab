@@ -11,7 +11,10 @@ resource "helm_release" "gatekeeper" {
   namespace        = "gatekeeper-system"
   create_namespace = true
   wait             = true
-  timeout          = 120
+  # Generous timeout: on slow networks the controller image pull (plus CRD
+  # install hooks) can take several minutes. 120s was too short and left the
+  # release in a failed state mid-pull.
+  timeout          = 600
 }
 
 resource "time_sleep" "gatekeeper_ready" {

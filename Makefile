@@ -21,15 +21,19 @@ APPROVE    := -input=false -auto-approve
 # kubectl targets must hit the lab cluster regardless of the active context
 # (Terraform pins this same context in providers.tf).
 KUBECTL    := kubectl --context k3d-webapp-test
+# floci is the local AWS emulator (Secrets Manager, STS, ECR) on :4566 that ESO
+# and the webapp image registry talk to. -p floci pins the compose project name
+# so we reuse the running stack instead of spawning a port-4566 duplicate.
+COMPOSE    := docker compose -p floci
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy status url redeploy-webapp infra secrets clean
+.PHONY: help deploy destroy floci-up floci-down status url redeploy-webapp infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-deploy: ## Create cluster + install Helm charts + deploy webapp (one command)
+deploy: floci-up ## Start floci + create cluster + install Helm charts + deploy webapp (one command)
 	cd $(TF_CLUSTER) && $(TF) init -input=false
 	@echo "==> Pass 1/3: create the k3d cluster"
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
@@ -41,6 +45,12 @@ deploy: ## Create cluster + install Helm charts + deploy webapp (one command)
 
 destroy: ## Tear down the k3d cluster (secrets/ and infra/ are left intact)
 	cd $(TF_CLUSTER) && $(TF) destroy $(APPROVE)
+
+floci-up: ## Start the floci AWS emulator (:4566) via docker compose
+	$(COMPOSE) up -d
+
+floci-down: ## Stop the floci AWS emulator
+	$(COMPOSE) down
 
 redeploy-webapp: ## Reapply only the webapp Deployment/Service (revert drift)
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=kubernetes_deployment.webapp -target=kubernetes_service.webapp

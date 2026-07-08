@@ -13,7 +13,8 @@ resource "helm_release" "eso" {
   namespace        = "external-secrets"
   create_namespace = true
   wait             = true
-  timeout          = 120
+  # Generous timeout for slow-network image pulls (see gatekeeper.tf).
+  timeout          = 600
 
   # LocalStack endpoint configuration — replaces the post-install kubectl set env hack.
   # These env vars tell the ESO controller where to find Secrets Manager and STS.

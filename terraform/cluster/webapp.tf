@@ -25,7 +25,8 @@ resource "helm_release" "webapp" {
   namespace        = "webapp"
   create_namespace = true
   wait             = true
-  timeout          = 120
+  # Generous timeout for slow-network image pulls (see gatekeeper.tf).
+  timeout          = 600
 
   set {
     name  = "image.repository"
