@@ -72,12 +72,15 @@ bootstrap: floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the r
 redeploy-webapp: ## Reapply only the webapp Deployment/Service (revert drift)
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=kubernetes_deployment.webapp -target=kubernetes_service.webapp
 
+# Leading '-' makes make ignore each command's exit code: status is read-only,
+# so a transient hiccup (e.g. the 'constraints' aggregate category not yet in
+# kubectl's discovery cache right after a fresh deploy) shouldn't fail the target.
 status: ## Show cluster / webapp / ESO / Gatekeeper state
-	$(KUBECTL) get pods -A
+	-$(KUBECTL) get pods -A
 	@echo "---"
-	$(KUBECTL) get externalsecret,secretstore -n webapp
+	-$(KUBECTL) get externalsecret,secretstore -n webapp
 	@echo "---"
-	$(KUBECTL) get constraints
+	-$(KUBECTL) get constraints
 
 url: ## Print the webapp URL
 	@cd $(TF_CLUSTER) && $(TF) output -raw app_url
