@@ -27,12 +27,22 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: webapp
+  # The ESO admission webhook defaults many ExternalSecret spec fields
+  # (creationPolicy, refreshPolicy, remoteRef.*), which aren't in the Git
+  # manifest. Ignoring fields owned by the ESO controller's field manager keeps
+  # the app Synced without masking genuine changes to what we declare.
+  ignoreDifferences:
+    - group: external-secrets.io
+      kind: ExternalSecret
+      jqPathExpressions:
+        - .spec.target
+        - .spec.refreshPolicy
+        - .spec.data[].remoteRef.conversionStrategy
+        - .spec.data[].remoteRef.decodingStrategy
+        - .spec.data[].remoteRef.metadataPolicy
   syncPolicy:
     automated:
       selfHeal: true
       prune: true
     syncOptions:
       - CreateNamespace=true
-      # ServerSideApply avoids the client-side annotation size limit on the
-      # large Gatekeeper ConstraintTemplate CRDs.
-      - ServerSideApply=true

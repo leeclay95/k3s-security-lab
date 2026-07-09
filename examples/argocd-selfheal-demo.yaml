@@ -1,0 +1,35 @@
+# Argo CD self-heal demo.
+#
+# Deploys the public guestbook example app into its own `selfheal-demo`
+# namespace — fully isolated from the Terraform-managed `webapp` namespace.
+#
+# syncPolicy.automated.selfHeal=true makes Argo CD continuously reconcile the
+# live cluster against the Git source and REVERT any out-of-band change within
+# seconds (vs. Terraform, which only catches drift at the next `terraform plan`).
+# prune=true deletes objects removed from Git. CreateNamespace bootstraps the ns.
+#
+# Demo:
+#   kubectl -n selfheal-demo scale deploy/guestbook-ui --replicas=5
+#   # ...watch Argo CD scale it straight back to 1 (self-heal)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: selfheal-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: selfheal-demo
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

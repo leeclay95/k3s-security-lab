@@ -71,6 +71,19 @@ A fully automated Kubernetes security lab that deploys a hardened nginx webapp o
 └────────────────────────────────────────────────────────┘
 ```
 
+### Ownership
+
+| Layer | Owner | Managed by |
+|---|---|---|
+| k3d cluster, floci prereqs (infra/secrets), image import | **Terraform** | `terraform/` roots + Makefile |
+| Gatekeeper, ESO, **Argo CD** controllers | **Terraform** | `helm_release` in `terraform/cluster/` |
+| webapp workload — Deployment, Service, RBAC, ConfigMap, ESO config, Gatekeeper policies | **Argo CD** | `Application webapp` → `charts/webapp` from Git |
+
+Terraform installs Argo CD and plants the `Application`
+(`argocd/webapp-application.yaml`, applied by `terraform/cluster/argocd.tf`);
+from there Argo is the **single reconciler** of the `webapp` namespace and
+self-heals drift continuously. See [Config drift](#config-drift--argo-cd-self-heals-out-of-band-changes-gitops).
+
 ---
 
 ## Prerequisites
@@ -193,8 +206,9 @@ The webapp and all its supporting resources are packaged as a local Helm chart. 
 | `eso-secretstore.yaml` | SecretStore with IAM role assumption |
 | `eso-externalsecret.yaml` | ExternalSecret for app secrets |
 | `eso-db-externalsecret.yaml` | ExternalSecret for DB credentials |
-| `gatekeeper-templates.yaml` | 5 ConstraintTemplates (Helm hook, weight 0) |
-| `gatekeeper-constraints.yaml` | 5 Constraints (Helm hook, weight 5) |
+| `gatekeeper-templates.yaml` | 5 ConstraintTemplates (Helm hook wt 0 / Argo sync-wave 0) |
+| `gatekeeper-constraints.yaml` | 5 Constraints (Helm hook wt 5 / Argo sync-wave 1) |
+| `values-argocd.yaml` | Values for the Argo CD-managed deployment (`helmHooks: false`) |
 
 ### Customizing values
 
@@ -245,43 +259,61 @@ kubectl get events -n webapp --field-selector reason=FailedCreate
 cd terraform/cluster && terraform apply
 ```
 
-### Config drift — Terraform detects and reverts out-of-band changes
+### Config drift — Argo CD self-heals out-of-band changes (GitOps)
 
-The webapp `Deployment` is a native `kubernetes_deployment` resource, so
-Terraform reads the live object on every plan and reverts anything changed
-outside of Terraform. This demo mounts a standalone ConfigMap
-(`examples/matrix-configmap.yaml`) onto the running Deployment by hand, then
-lets Terraform undo it.
+The webapp is owned by **Argo CD**, not Terraform (see [Ownership](#ownership)).
+Argo continuously reconciles the live `webapp` namespace against `charts/webapp`
+in Git: any out-of-band `kubectl` edit is reverted by `selfHeal`, and objects
+deleted from the cluster are recreated by `prune` — no `terraform apply` needed.
+
+**CLI drift test** (against the `webapp` namespace):
 
 ```bash
-# 1. Baseline — the default nginx page
-curl -s http://localhost:30080 | grep -o '<title>.*</title>'      # Welcome to nginx!
+# baseline
+kubectl get deploy webapp -n webapp -o jsonpath='{.spec.replicas}'   # 1
 
-# 2. Introduce drift: apply the ConfigMap and mount it at nginx's docroot,
-#    directly on the live Deployment (not via Terraform)
-kubectl apply -f examples/matrix-configmap.yaml
-kubectl patch deployment webapp -n webapp --type=strategic -p '{"spec":{"template":{"spec":{"volumes":[{"name":"matrix-html","configMap":{"name":"matrix-index-html"}}],"containers":[{"name":"webapp","volumeMounts":[{"name":"matrix-html","mountPath":"/usr/share/nginx/html","readOnly":true}]}]}}}}'
-kubectl rollout status deployment/webapp -n webapp
-curl -s http://localhost:30080 | grep -o '<title>.*</title>'      # ...the matrix has you
+# drift 1 — scale out of band; Argo scales it back
+kubectl scale deploy/webapp -n webapp --replicas=5
+kubectl get deploy webapp -n webapp -w                               # watch it return to 1
 
-# 3. Terraform SEES the drift
-cd terraform/cluster
-terraform plan                                                    # kubernetes_deployment.webapp will be updated in-place (removes matrix-html mount)
+# drift 2 — delete a managed object; Argo recreates it (prune keeps Git authoritative)
+kubectl delete svc webapp -n webapp
+kubectl get svc -n webapp -w                                         # watch it reappear
 
-# 4. Terraform BRINGS IT BACK
-terraform apply                                                   # or: make redeploy-webapp
-kubectl rollout status deployment/webapp -n webapp
-curl -s http://localhost:30080 | grep -o '<title>.*</title>'      # Welcome to nginx! (reverted)
-
-# 5. (optional) remove the leftover ConfigMap — Terraform doesn't manage it,
-#    so it lingers harmlessly after the Deployment mount is reverted
-kubectl delete -f examples/matrix-configmap.yaml
+# see the Application flip OutOfSync -> Synced
+make argo-app
 ```
 
-> **Why this works:** only the *mount* on the Deployment is Terraform-managed
-> state, so `terraform apply` strips it back to the declared spec. The
-> ConfigMap object itself was never in Terraform, so it's left untouched — a
-> good illustration of drift being scoped to what Terraform actually owns.
+**GUI drift test:**
+
+```bash
+make argo-ui                 # port-forward https://localhost:8081 (user: admin)
+# password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
+```
+
+Open the `webapp` app tile: the resource tree shows each object's health, live
+status flips to **OutOfSync** the instant you `kubectl scale`/`delete`, and back
+to **Synced** as Argo reconciles. The **APP DIFF** tab shows the exact drift.
+
+> **Self-heal latency:** a single drift on a healthy app reverts within seconds.
+> Argo applies an exponential **self-heal backoff** under *repeated* rapid drift,
+> so during heavy testing a revert can take a minute or two — it always converges.
+
+**Try it without migrating** — `examples/argocd-webapp-demo.yaml` runs the same
+chart under Argo in an isolated `webapp-argo` namespace (Gatekeeper disabled,
+nodePort 30081) so it's safe on any cluster:
+
+```bash
+kubectl apply -f examples/argocd-webapp-demo.yaml
+make argo-app   # (or: kubectl get application webapp-demo -n argocd)
+# cleanup: kubectl delete -f examples/argocd-webapp-demo.yaml && kubectl delete ns webapp-argo
+```
+
+> **Why this beats plan-time drift detection:** Terraform only catches drift when
+> someone runs `terraform plan`. Argo reconciles continuously, so unapproved
+> `kubectl` changes are reverted on their own — the "approved changes only through
+> Git" model. Terraform's job shrinks to day-0 platform (cluster, controllers,
+> AWS bootstrap, image import).
 
 ### kubesec — static manifest score
 

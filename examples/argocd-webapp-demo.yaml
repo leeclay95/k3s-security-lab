@@ -37,10 +37,20 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: webapp-argo
+  # ESO's webhook defaults ExternalSecret fields not present in Git; ignore the
+  # fields its controller owns so the app reads Synced (see webapp-application.yaml).
+  ignoreDifferences:
+    - group: external-secrets.io
+      kind: ExternalSecret
+      jqPathExpressions:
+        - .spec.target
+        - .spec.refreshPolicy
+        - .spec.data[].remoteRef.conversionStrategy
+        - .spec.data[].remoteRef.decodingStrategy
+        - .spec.data[].remoteRef.metadataPolicy
   syncPolicy:
     automated:
       selfHeal: true
       prune: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
