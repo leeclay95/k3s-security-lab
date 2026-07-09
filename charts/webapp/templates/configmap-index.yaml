@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
+data:
   # Git-declared baseline page. Argo CD keeps the live webapp serving exactly
   # this; any out-of-band change (e.g. mounting a different page) is reverted.
   index.html: |
