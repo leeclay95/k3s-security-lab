@@ -1,0 +1,44 @@
+# Matrix page as a standalone ConfigMap, for the Argo CD drift demo in the
+# webapp-argo namespace. Apply it and mount it on the live Deployment to
+# simulate an out-of-band change; Argo reverts the Deployment to the Git spec
+# (which mounts webapp-index-html, the default nginx page).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: matrix-index-html
+  namespace: webapp-argo
+  labels:
+    app: webapp
+    demo: config-drift
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>the matrix has you</title>
+      <style>
+        html,body{margin:0;height:100%;background:#000;overflow:hidden}
+        canvas{display:block}
+        .hud{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+          justify-content:center;pointer-events:none;font-family:"Courier New",monospace;
+          color:#00ff41;text-shadow:0 0 8px #00ff41,0 0 20px #00b32d}
+        .hud h1{font-size:clamp(1.6rem,6vw,3.4rem);margin:0;letter-spacing:.15em}
+        .hud p{font-size:clamp(.8rem,2.4vw,1.1rem);margin:.6rem 0 0;letter-spacing:.3em;opacity:.85}
+      </style>
+    </head>
+    <body>
+      <canvas id="m"></canvas>
+      <div class="hud"><h1>WAKE UP, NEO...</h1><p>THIS PAGE IS DRIFT</p></div>
+      <script>
+        const c=document.getElementById('m'),x=c.getContext('2d');let cols,drops;
+        const g='ｱｲｳｴｵｶｷｸｹｺ0123456789ABCDEF@#$%'.split(''),fs=16;
+        function r(){c.width=innerWidth;c.height=innerHeight;cols=c.width/fs|0;drops=Array(cols).fill(1)}
+        function d(){x.fillStyle='rgba(0,0,0,.06)';x.fillRect(0,0,c.width,c.height);
+          x.fillStyle='#00ff41';x.font=fs+'px monospace';
+          for(let i=0;i<drops.length;i++){x.fillText(g[Math.random()*g.length|0],i*fs,drops[i]*fs);
+          if(drops[i]*fs>c.height&&Math.random()>.975)drops[i]=0;drops[i]++}}
+        addEventListener('resize',r);r();setInterval(d,45);
+      </script>
+    </body>
+    </html>

@@ -5,29 +5,29 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
-data:
+  # Git-declared baseline page. Argo CD keeps the live webapp serving exactly
+  # this; any out-of-band change (e.g. mounting a different page) is reverted.
   index.html: |
     <!DOCTYPE html>
     <html>
     <head>
-      <title>k3s security lab</title>
+      <title>Welcome to nginx!</title>
       <style>
-        body {
-          background: #0d1117;
-          color: #c9d1d9;
-          font-family: monospace;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          margin: 0;
-        }
-        h1 { color: #58a6ff; }
-        p { color: #8b949e; }
+        html { color-scheme: light dark; }
+        body { width: 35em; margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif; }
       </style>
     </head>
     <body>
-      <h1>testing 123 welcome</h1>
+      <h1>Welcome to nginx!</h1>
+      <p>If you see this page, the nginx web server is successfully installed and
+      working. Further configuration is required.</p>
+
+      <p>For online documentation and support please refer to
+      <a href="http://nginx.org/">nginx.org</a>.<br/>
+      Commercial support is available at
+      <a href="http://nginx.com/">nginx.com</a>.</p>
+
+      <p><em>Thank you for using nginx.</em></p>
     </body>
     </html>
