@@ -244,20 +244,61 @@ All four original HIGH findings resolved:
 
 ## Testing Security Controls
 
-### Gatekeeper — live admission denial
+### Gatekeeper — test the admission policies
+
+Five constraints are enforced (`enforcementAction: deny`) and scoped to the
+`webapp` namespace. Gatekeeper is an admission webhook, so violations are
+**rejected at apply time** — the object never reaches the cluster.
+
+**See what's active:**
 
 ```bash
-# Try to deploy a privileged pod — Gatekeeper blocks it
-kubectl run badpod -n webapp --image=nginx --overrides='{"spec":{"containers":[{"name":"badpod","image":"nginx","securityContext":{"privileged":true}}]}}'
-# Error from server: admission webhook denied the request
-
-# See the violation recorded on the constraint
-kubectl describe k8sblockprivileged.constraints.gatekeeper.sh/block-privileged-containers
-kubectl get events -n webapp --field-selector reason=FailedCreate
-
-# Restore clean state
-cd terraform/cluster && terraform apply
+kubectl get constrainttemplates          # the 5 policy templates
+kubectl get constraints                   # the 5 constraints + live violation counts
 ```
+
+**Test each policy** — every command below should be **denied** by the webhook:
+
+```bash
+# 1. block-privileged — privileged container
+kubectl run t1 -n webapp --image=nginx --overrides='{"spec":{"containers":[{"name":"t1","image":"nginx","securityContext":{"privileged":true}}]}}'
+
+# 2. require-non-root — no runAsNonRoot
+kubectl run t2 -n webapp --image=nginx
+# denied: containers must set runAsNonRoot: true
+
+# 3. require-resource-limits — no cpu/memory limits
+kubectl run t3 -n webapp --image=nginx --overrides='{"spec":{"containers":[{"name":"t3","image":"nginx","securityContext":{"runAsNonRoot":true}}]}}'
+# denied: container has no resource limits
+
+# 4. block-host-namespaces — hostNetwork/hostPID/hostIPC
+kubectl run t4 -n webapp --image=nginx --overrides='{"spec":{"hostNetwork":true,"containers":[{"name":"t4","image":"nginx"}]}}'
+
+# 5. block-dangerous-caps — added SYS_ADMIN capability
+kubectl run t5 -n webapp --image=nginx --overrides='{"spec":{"containers":[{"name":"t5","image":"nginx","securityContext":{"capabilities":{"add":["SYS_ADMIN"]}}}]}}'
+```
+
+Each returns `Error from server: admission webhook "validation.gatekeeper.sh"
+denied the request: [<constraint>] <message>`.
+
+**Confirm the compliant webapp still passes** — Argo's deployment satisfies all
+five (non-root, limits, dropped caps, no host namespaces), so it stays Healthy:
+
+```bash
+kubectl get pods -n webapp                # webapp pod Running — it meets every policy
+```
+
+**Inspect violations / audit** (Gatekeeper also audits existing objects, not just
+new ones):
+
+```bash
+kubectl describe k8srequirelimits.constraints.gatekeeper.sh/require-resource-limits
+kubectl get constraints -o custom-columns='NAME:.metadata.name,ACTION:.spec.enforcementAction,VIOLATIONS:.status.totalViolations'
+```
+
+> These policies are part of the chart Argo owns. To change them, edit
+> `charts/webapp/templates/gatekeeper-*.yaml`, commit, and Argo syncs the new
+> policy — the GitOps path for security controls too.
 
 ### Config drift — Argo CD self-heals out-of-band changes (GitOps)
 
@@ -266,46 +307,88 @@ Argo continuously reconciles the live `webapp` namespace against `charts/webapp`
 in Git: any out-of-band `kubectl` edit is reverted by `selfHeal`, and objects
 deleted from the cluster are recreated by `prune` — no `terraform apply` needed.
 
-**CLI drift test** (against the `webapp` namespace):
+#### Accessing the apps
 
 ```bash
-# baseline
-kubectl get deploy webapp -n webapp -o jsonpath='{.spec.replicas}'   # 1
+make access        # prints all URLs + how to log in
+```
 
-# drift 1 — scale out of band; Argo scales it back
+| What | How |
+|---|---|
+| **webapp** | `http://localhost:30080` (NodePort, host-mapped — survives pod rollovers) |
+| **Argo CD UI** | `make argo-ui` → `https://localhost:8081`, user `admin` |
+| **Argo admin password** | `kubectl --context k3d-webapp-test -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d` |
+
+The Argo UI serves HTTPS with a self-signed cert — accept the browser warning.
+After first login, change the admin password and delete the bootstrap secret.
+
+#### Quick CLI drift tests
+
+```bash
+# scale out of band — Argo scales it back to the Git value (1)
 kubectl scale deploy/webapp -n webapp --replicas=5
-kubectl get deploy webapp -n webapp -w                               # watch it return to 1
+kubectl get deploy webapp -n webapp -w        # watch it return to 1 (Ctrl-C to stop)
 
-# drift 2 — delete a managed object; Argo recreates it (prune keeps Git authoritative)
+# delete a managed object — prune recreates it from Git
 kubectl delete svc webapp -n webapp
-kubectl get svc -n webapp -w                                         # watch it reappear
+kubectl get svc -n webapp -w                  # watch it reappear
 
-# see the Application flip OutOfSync -> Synced
-make argo-app
+make argo-app                                 # Application flips OutOfSync -> Synced
 ```
 
-**GUI drift test:**
+#### Full page-drift walkthrough (see it in the browser)
+
+Self-heal is fast, so to actually *watch* the drift, **pause** it first, then
+resume on demand:
 
 ```bash
-make argo-ui                 # port-forward https://localhost:8081 (user: admin)
-# password: kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
+# 0. baseline — the Git-declared page
+curl -s http://localhost:30080 | grep -o '<title>.*</title>'     # Welcome to nginx!
+
+# 1. PAUSE Argo's auto-revert so the drift holds
+make argo-pause
+
+# 2. mount the Matrix page over nginx's docroot on the LIVE Deployment (out-of-band)
+kubectl apply -f examples/matrix-configmap.yaml
+kubectl patch deployment webapp -n webapp --type=strategic -p '{"spec":{"template":{"spec":{"volumes":[{"name":"html","configMap":{"name":"matrix-index-html"}}]}}}}'
+kubectl rollout status deploy/webapp -n webapp
+curl -s http://localhost:30080 | grep -o '<title>.*</title>'     # the matrix has you
+#    open http://localhost:30080 in the browser — the Matrix page STAYS (self-heal paused)
+#    in the Argo UI the webapp app now shows OutOfSync (drift detected, not healed)
+
+# 3. RESUME self-heal — Argo reverts the mount back to Git within seconds
+make argo-resume
+kubectl rollout status deploy/webapp -n webapp
+curl -s http://localhost:30080 | grep -o '<title>.*</title>'     # Welcome to nginx! (reverted)
+
+# 4. cleanup the leftover drift ConfigMap (Argo never tracked it, so it lingers)
+kubectl delete -f examples/matrix-configmap.yaml
 ```
 
-Open the `webapp` app tile: the resource tree shows each object's health, live
-status flips to **OutOfSync** the instant you `kubectl scale`/`delete`, and back
-to **Synced** as Argo reconciles. The **APP DIFF** tab shows the exact drift.
+> **The GitOps way to actually change the page** (vs. the drift above) is to edit
+> `charts/webapp/templates/configmap-index.yaml`, commit, and push — Argo then
+> deploys it as an *approved* change. The `kubectl patch` is the *unapproved* path,
+> which is exactly why Argo reverts it.
+
+#### GUI drift test
+
+With `make argo-ui` running, open the `webapp` app tile: the resource tree shows
+each object's health, status flips to **OutOfSync** the instant you drift it, and
+back to **Synced** as Argo reconciles. The **APP DIFF** button shows the exact diff.
 
 > **Self-heal latency:** a single drift on a healthy app reverts within seconds.
 > Argo applies an exponential **self-heal backoff** under *repeated* rapid drift,
 > so during heavy testing a revert can take a minute or two — it always converges.
+> `make argo-pause` / `make argo-resume` gives you deterministic control for demos.
 
-**Try it without migrating** — `examples/argocd-webapp-demo.yaml` runs the same
-chart under Argo in an isolated `webapp-argo` namespace (Gatekeeper disabled,
-nodePort 30081) so it's safe on any cluster:
+**Try it without a full migration** — `examples/argocd-webapp-demo.yaml` runs the
+same chart under Argo in an isolated `webapp-argo` namespace (Gatekeeper disabled,
+nodePort 30081) so it's safe on a cluster where Terraform still owns `webapp`:
 
 ```bash
 kubectl apply -f examples/argocd-webapp-demo.yaml
-make argo-app   # (or: kubectl get application webapp-demo -n argocd)
+make argo-app                                # or: kubectl get application webapp-demo -n argocd
+kubectl port-forward -n webapp-argo svc/webapp 8082:80   # 30081 isn't host-mapped
 # cleanup: kubectl delete -f examples/argocd-webapp-demo.yaml && kubectl delete ns webapp-argo
 ```
 
