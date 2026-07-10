@@ -6,26 +6,29 @@ metadata:
   labels:
     {{- include "webapp.labels" . | nindent 4 }}
 data:
-  # Git-declared page. Argo CD keeps the live webapp serving exactly this;
-  # any out-of-band change (e.g. mounting a different page) is reverted.
+  # Git-declared baseline page. Argo CD keeps the live webapp serving exactly
+  # this; any out-of-band change (e.g. mounting a different page) is reverted.
   index.html: |
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Approved Deployment</title>
+      <title>Welcome to nginx!</title>
       <style>
         html { color-scheme: light dark; }
-        body { font-family: system-ui, Tahoma, Verdana, Arial, sans-serif;
-        text-align: center; margin-top: 8em; background: #0b3d0b; color: #eafbe7; }
-        .tag { font-size: .8em; letter-spacing: .3em; color: #7CFC00; }
-        h1 { margin: .3em 0; }
-        code { background: rgba(255,255,255,.1); padding: .1em .4em; border-radius: 4px; }
+        body { width: 35em; margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif; }
       </style>
     </head>
     <body>
-      <div class="tag">&#9989; TESTING &mdash; APPROVED DEPLOYMENT</div>
-      <h1>Deployment approved and live via GitOps</h1>
-      <p>This page is served from Git &rarr; Argo CD &rarr; nginx.</p>
-      <p>Source of truth: <code>charts/webapp/templates/configmap-index.yaml</code></p>
+      <h1>Welcome to nginx!</h1>
+      <p>If you see this page, the nginx web server is successfully installed and
+      working. Further configuration is required.</p>
+
+      <p>For online documentation and support please refer to
+      <a href="http://nginx.org/">nginx.org</a>.<br/>
+      Commercial support is available at
+      <a href="http://nginx.com/">nginx.com</a>.</p>
+
+      <p><em>Thank you for using nginx.</em></p>
     </body>
     </html>
