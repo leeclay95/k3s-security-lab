@@ -4,6 +4,34 @@ A fully automated Kubernetes security lab that deploys a hardened nginx webapp o
 
 ---
 
+## Using this as your own — repoint Argo CD first
+
+This lab is GitOps: **Argo CD serves the webapp by pulling `charts/webapp` from a
+Git URL, not from your local clone.** That URL is hardcoded to the original repo,
+so if you fork/clone this and make it your own, you **must** repoint Argo at
+*your* repo first — otherwise your edits never reach the running app (Argo keeps
+syncing the original public repo, which you can't push to).
+
+1. Update `repoURL` in **`argocd/webapp-application.yaml`** (and
+   `examples/argocd-webapp-demo.yaml`) to your repo:
+   ```yaml
+   repoURL: https://github.com/<your-user>/<your-repo>.git
+   ```
+   One-liner from the repo root:
+   ```bash
+   grep -rl 'leeclay95/k3s-security-lab' argocd examples | xargs sed -i 's#leeclay95/k3s-security-lab#<your-user>/<your-repo>#g'
+   ```
+2. If your repo is **private**, register repo credentials with Argo CD (a repo
+   Secret / PAT). The default setup assumes a **public** repo and clones
+   anonymously — no credentials configured.
+3. Commit and push, then `make deploy`.
+
+Everything else is generic and needs no change: Terraform, k3d, floci, the ECR
+account `000000000000` and `us-east-1` (LocalStack/floci defaults), and the
+helper scripts are all created by the deploy, not tied to any account.
+
+---
+
 ## What This Proves
 
 | Layer | Tool | What it enforces |
