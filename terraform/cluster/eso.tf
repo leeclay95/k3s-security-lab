@@ -40,3 +40,22 @@ resource "time_sleep" "eso_ready" {
   depends_on      = [helm_release.eso]
   create_duration = "10s"
 }
+
+# Readiness gate: block the webapp Argo Application (which contains
+# ExternalSecret/SecretStore objects) until ESO's CRDs are actually Established.
+# On a fresh install ESO registers ~two dozen CRDs asynchronously; if Argo
+# dry-runs an ExternalSecret before `externalsecrets.external-secrets.io` is
+# servable, the sync fails and — with a bounded retry — can give up for good.
+# argocd.tf's null_resource.webapp_application depends on this. Idempotent, so it
+# also re-runs cheaply on later applies.
+resource "null_resource" "eso_crds_ready" {
+  depends_on = [helm_release.eso, time_sleep.eso_ready]
+
+  triggers = {
+    release = helm_release.eso.id
+  }
+
+  provisioner "local-exec" {
+    command = "${path.module}/../../scripts/wait-eso-crds.sh"
+  }
+}

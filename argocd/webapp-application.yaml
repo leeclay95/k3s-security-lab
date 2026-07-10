@@ -13,8 +13,12 @@ kind: Application
 metadata:
   name: webapp
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
+  # NOTE: intentionally no `resources-finalizer.argocd.argoproj.io`. With the
+  # finalizer, deleting/replacing this Application object cascade-prunes every
+  # managed resource — so any edit to this manifest (Terraform replaces the
+  # null_resource that applies it) would tear the whole webapp down and force a
+  # slow from-scratch re-sync. We don't need cascade-on-delete here: `make
+  # destroy` removes the entire k3d cluster, which cleans everything anyway.
 spec:
   project: default
   source:
@@ -46,3 +50,24 @@ spec:
       prune: true
     syncOptions:
       - CreateNamespace=true
+      # Only push resources that are actually out of sync — smaller, faster syncs.
+      - ApplyOutOfSyncOnly=true
+      # Break the ConstraintTemplate->Constraint bootstrap deadlock. The chart's
+      # Gatekeeper Constraints reference CRDs that the ConstraintTemplates
+      # generate at sync time; without this, Argo's up-front dry-run fails on the
+      # not-yet-existent constraint CRDs and refuses to apply ANYTHING (including
+      # the templates that create them). Skipping dry-run for missing-CRD
+      # resources lets wave-0 templates apply, Gatekeeper generate the CRDs, then
+      # wave-1 Constraints apply on the next retry.
+      - SkipDryRunOnMissingResource=true
+    # Keep retrying on failure with a long, capped backoff instead of giving up.
+    # On a fresh cluster the first syncs can transiently fail while ESO's
+    # ExternalSecret CRD (or a Gatekeeper-generated constraint CRD) is still
+    # registering; a generous retry lets Argo self-recover once it appears
+    # rather than parking the app OutOfSync/Missing after ~5 default attempts.
+    retry:
+      limit: 15
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

@@ -18,6 +18,12 @@ TF_INFRA   := terraform/infra
 TF_SECRETS := terraform/secrets
 TF         := terraform
 APPROVE    := -input=false -auto-approve
+# Wrap terraform steps so a TRANSIENT provider-startup failure under load
+# (this box thrashes; the AWS provider can hit "timeout while waiting for plugin
+# to start") is retried instead of aborting the whole deploy. Every wrapped step
+# is idempotent. RETRY takes the entire 'cd DIR && terraform ...' as one string.
+# See scripts/retry.sh (args: <max_attempts> <sleep_seconds> <command...>).
+RETRY      := ./scripts/retry.sh 3 15 sh -c
 # kubectl targets must hit the lab cluster regardless of the active context
 # (Terraform pins this same context in providers.tf).
 KUBECTL    := kubectl --context k3d-webapp-test
@@ -27,6 +33,11 @@ KUBECTL    := kubectl --context k3d-webapp-test
 #   make webapp-ui  WEBAPP_NS=webapp-argo
 ARGO_APP   ?= webapp
 WEBAPP_NS  ?= webapp
+# Local ports the port-forward targets bind. Override when one is already taken:
+#   make argo-ui   ARGO_PORT=8091
+#   make webapp-ui WEBAPP_PORT=8090
+ARGO_PORT   ?= 8081
+WEBAPP_PORT ?= 8080
 # floci is the local AWS emulator (Secrets Manager, STS, ECR) on :4566 that ESO
 # and the webapp image registry talk to. -p floci pins the compose project name
 # so we reuse the running stack instead of spawning a port-4566 duplicate.
@@ -43,7 +54,7 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy bootstrap cluster-up floci-up floci-down argo-app argo-ui webapp-ui argo-pause argo-resume access status url infra secrets clean
+.PHONY: help deploy destroy bootstrap cluster-up floci-up floci-down argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -56,14 +67,14 @@ cluster-up: ## Start the k3d cluster if it exists but was stopped (e.g. after a 
 	fi
 
 deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + cluster + webapp
-	cd $(TF_CLUSTER) && $(TF) init -input=false
+	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) init -input=false'
 	@echo "==> Pass 1/3: create the k3d cluster"
-	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
+	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready'
 	@echo "==> Pass 2/3: install Gatekeeper + ESO + Argo CD controllers"
-	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=helm_release.gatekeeper -target=time_sleep.gatekeeper_ready -target=helm_release.eso -target=time_sleep.eso_ready -target=helm_release.argocd -target=time_sleep.argocd_ready
-	@echo "==> Pass 3/3: import image + plant Argo Application (Argo then syncs the webapp from Git)"
-	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE)
-	@echo "==> Done. webapp owned by Argo CD. Access info:"
+	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=helm_release.gatekeeper -target=time_sleep.gatekeeper_ready -target=helm_release.eso -target=time_sleep.eso_ready -target=helm_release.argocd -target=time_sleep.argocd_ready'
+	@echo "==> Pass 3/3: import image, wait for ESO CRDs, plant Argo Application, wait for webapp Healthy"
+	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE)'
+	@echo "==> Done. webapp owned by Argo CD and verified Healthy. Access info:"
 	@$(MAKE) --no-print-directory access
 
 destroy: ## Tear down the k3d cluster (secrets/ and infra/ are left intact)
@@ -77,25 +88,30 @@ floci-down: ## Stop the floci AWS emulator
 
 bootstrap: floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the required order
 	@echo "==> floci up; applying secrets (pass 1, no KMS)"
-	cd $(TF_SECRETS) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"
+	$(RETRY) 'cd $(TF_SECRETS) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"'
 	@echo "==> applying infra (KMS, IAM role for ESO, ECR, RDS)"
-	cd $(TF_INFRA) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)"
+	$(RETRY) 'cd $(TF_INFRA) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)"'
 	@echo "==> re-applying secrets WITH KMS from infra output"
-	cd $(TF_SECRETS) && $(TF) apply $(APPROVE) -var="kms_key_arn=$$(cd ../infra && $(TF) output -raw kms_key_arn)" -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"
+	$(RETRY) 'cd $(TF_SECRETS) && $(TF) apply $(APPROVE) -var="kms_key_arn=$$(cd ../infra && $(TF) output -raw kms_key_arn)" -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"'
 
 argo-app: ## Show the webapp Argo CD Application (sync/health + managed resources)
 	-$(KUBECTL) get application $(ARGO_APP) -n argocd -o custom-columns='NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status'
 	@echo "---"
 	-$(KUBECTL) get application $(ARGO_APP) -n argocd -o jsonpath='{range .status.resources[*]}{.kind}/{.name}  {.status}{"\n"}{end}'
 
-argo-ui: ## Port-forward the Argo CD UI to https://localhost:8081
-	@echo "Argo CD UI -> https://localhost:8081 (user: admin)"
-	@echo "password: kubectl --context k3d-webapp-test -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
-	$(KUBECTL) port-forward -n argocd svc/argocd-server 8081:443
+argo-ui: ## Port-forward the Argo CD UI (user admin); override port with ARGO_PORT=
+	@echo "Argo CD UI -> https://localhost:$(ARGO_PORT)  (user: admin)"
+	@echo "password:      make argo-password"
+	@echo "(port in use? re-run with a different local port, e.g. make argo-ui ARGO_PORT=8091)"
+	$(KUBECTL) port-forward -n argocd svc/argocd-server $(ARGO_PORT):443
 
-webapp-ui: ## Port-forward the webapp to http://localhost:8080 (also on NodePort 30080)
-	@echo "webapp -> http://localhost:8080  (or directly at http://localhost:30080)"
-	$(KUBECTL) port-forward -n $(WEBAPP_NS) svc/webapp 8080:80
+argo-password: ## Print the Argo CD initial admin password
+	@$(KUBECTL) -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
+
+webapp-ui: ## Port-forward the webapp to localhost (default :8080); override with WEBAPP_PORT=
+	@echo "webapp -> http://localhost:$(WEBAPP_PORT)  (or directly at http://localhost:30080)"
+	@echo "(port in use? re-run with a different local port, e.g. make webapp-ui WEBAPP_PORT=8090)"
+	$(KUBECTL) port-forward -n $(WEBAPP_NS) svc/webapp $(WEBAPP_PORT):80
 
 argo-pause: ## Pause Argo self-heal on the webapp app (drift will persist until resumed)
 	$(KUBECTL) patch application $(ARGO_APP) -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":{"selfHeal":false,"prune":true}}}}'
@@ -107,9 +123,9 @@ argo-resume: ## Resume Argo self-heal (reverts any outstanding drift within seco
 
 access: ## Print how to reach the webapp and the Argo CD UI
 	@echo "webapp:      http://localhost:30080          (NodePort, host-mapped — no port-forward needed)"
-	@echo "             make webapp-ui                  (alt: port-forward to :8080)"
-	@echo "Argo CD UI:  make argo-ui                    (port-forward https://localhost:8081, user admin)"
-	@echo "             password: kubectl --context k3d-webapp-test -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d"
+	@echo "             make webapp-ui                  (alt: port-forward to :$(WEBAPP_PORT); override WEBAPP_PORT=)"
+	@echo "Argo CD UI:  make argo-ui                    (port-forward https://localhost:$(ARGO_PORT), user admin; override ARGO_PORT=)"
+	@echo "             make argo-password              (prints the admin password)"
 
 # Leading '-' makes make ignore each command's exit code: status is read-only,
 # so a transient hiccup (e.g. the 'constraints' aggregate category not yet in

@@ -35,6 +35,12 @@ resource "null_resource" "webapp_application" {
     helm_release.argocd,
     time_sleep.argocd_ready,
     null_resource.ecr_image_import,
+    # Don't plant the Application until ESO's CRDs are servable — otherwise
+    # Argo's first sync of the ExternalSecrets can fail and permanently give up.
+    null_resource.eso_crds_ready,
+    # ...and until Gatekeeper's constraint CRDs exist, or Argo's first sync
+    # deadlocks on the Constraints (see gatekeeper.tf).
+    null_resource.gatekeeper_crds_primed,
   ]
 
   triggers = {
@@ -48,5 +54,23 @@ resource "null_resource" "webapp_application" {
   provisioner "local-exec" {
     when    = destroy
     command = "kubectl --context k3d-webapp-test delete -f ${path.module}/../../argocd/webapp-application.yaml --ignore-not-found=true"
+  }
+}
+
+# Block the apply until Argo has actually brought the webapp UP. Planting the
+# Application above is instant, but Argo then has to sync the chart, ESO has to
+# fetch the secrets from floci, and the pod has to start. Without this gate
+# `make deploy` returns "done" while the webapp is still Missing. The script
+# polls the Application's health and issues one hard-refresh nudge if it stalls
+# (e.g. Argo's discovery cache hasn't yet picked up a freshly-registered CRD).
+resource "null_resource" "webapp_synced" {
+  depends_on = [null_resource.webapp_application]
+
+  triggers = {
+    application = null_resource.webapp_application.id
+  }
+
+  provisioner "local-exec" {
+    command = "${path.module}/../../scripts/wait-argo-healthy.sh webapp"
   }
 }

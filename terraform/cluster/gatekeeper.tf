@@ -21,3 +21,25 @@ resource "time_sleep" "gatekeeper_ready" {
   depends_on      = [helm_release.gatekeeper]
   create_duration = "15s"
 }
+
+# Prime the Gatekeeper constraint CRDs BEFORE Argo plants the webapp app.
+# The webapp chart bundles ConstraintTemplates + Constraints; Gatekeeper mints a
+# constraint's CRD asynchronously from its template, so on a cold cluster the CRD
+# doesn't exist when Argo first plans the sync. Argo then can't map the
+# Constraints, marks the whole sync invalid, and applies nothing — including the
+# templates that would create the CRDs (a permanent deadlock). Applying the
+# templates here first breaks that cycle; Argo later adopts the identical
+# templates from Git. argocd.tf's null_resource.webapp_application depends on
+# this. Idempotent. Re-runs whenever the templates file changes.
+resource "null_resource" "gatekeeper_crds_primed" {
+  depends_on = [helm_release.gatekeeper, time_sleep.gatekeeper_ready]
+
+  triggers = {
+    templates = filesha256("${path.module}/../../charts/webapp/templates/gatekeeper-templates.yaml")
+    values    = filesha256("${path.module}/../../charts/webapp/values-argocd.yaml")
+  }
+
+  provisioner "local-exec" {
+    command = "${path.module}/../../scripts/prime-gatekeeper-crds.sh"
+  }
+}

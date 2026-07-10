@@ -28,9 +28,16 @@ override.tf.json
 *.swo
 *~
 .DS_Store
+# Ignore ad-hoc/scratch shell scripts by default...
 *.sh
+# ...but the scripts/ dir holds deploy-critical helpers Terraform + the Makefile
+# call locally (retry, CRD readiness gates, gatekeeper priming). A fresh clone
+# needs them, so keep them tracked.
+!scripts/*.sh
 CLAUDE*
 RESULTS*
+# Transient deploy log written by `make deploy` redirection
+deploy.log
 # Python cache
 __pycache__/
 *.pyc
