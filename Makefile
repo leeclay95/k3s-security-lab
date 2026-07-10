@@ -43,12 +43,19 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy bootstrap floci-up floci-down argo-app argo-ui webapp-ui argo-pause argo-resume access status url infra secrets clean
+.PHONY: help deploy destroy bootstrap cluster-up floci-up floci-down argo-app argo-ui webapp-ui argo-pause argo-resume access status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-deploy: bootstrap ## Full ordered deploy: floci + secrets + infra + cluster + webapp
+cluster-up: ## Start the k3d cluster if it exists but was stopped (e.g. after a reboot)
+	@# Terraform's null_resource can't tell a stopped cluster from a healthy one,
+	@# so self-heal here: if the cluster exists but its server is down, start it.
+	@if k3d cluster list webapp-test >/dev/null 2>&1; then \
+		k3d cluster start webapp-test 2>/dev/null || true; \
+	fi
+
+deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + cluster + webapp
 	cd $(TF_CLUSTER) && $(TF) init -input=false
 	@echo "==> Pass 1/3: create the k3d cluster"
 	cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready
