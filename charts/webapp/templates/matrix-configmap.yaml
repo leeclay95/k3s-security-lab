@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "webapp.name" . }}-index-html
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "webapp.labels" . | nindent 4 }}
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Matrix // webapp</title>
+      <style>
+        html,body{margin:0;height:100%;background:#000;overflow:hidden}
+        #msg{position:fixed;top:50%;left:0;right:0;transform:translateY(-50%);
+          text-align:center;color:#0f0;font-family:monospace;font-size:2em;
+          text-shadow:0 0 8px #0f0;z-index:2}
+      </style>
+    </head>
+    <body>
+      <div id="msg">Wake up, Neo... GitOps has you.</div>
+      <canvas id="m"></canvas>
+      <script>
+        const c=document.getElementById('m'),x=c.getContext('2d');
+        function sz(){c.width=innerWidth;c.height=innerHeight}
+        sz();addEventListener('resize',sz);
+        let drops=Array(Math.floor(innerWidth/16)).fill(1);
+        const chars='アイウエオカ0123456789ABCDEF'.split('');
+        setInterval(function(){
+          x.fillStyle='rgba(0,0,0,0.06)';x.fillRect(0,0,c.width,c.height);
+          x.fillStyle='#0f0';x.font='16px monospace';
+          for(let i=0;i<drops.length;i++){
+            x.fillText(chars[Math.floor(Math.random()*chars.length)],i*16,drops[i]*16);
+            if(drops[i]*16>c.height&&Math.random()>0.975)drops[i]=0;
+            drops[i]++;
+          }
+        },50);
+      </script>
+    </body>
+    </html>
