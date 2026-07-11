@@ -1,0 +1,66 @@
+name: security-gates
+
+# Block merges until kubesec (rendered Helm chart), tfsec (>= HIGH), and
+# conftest/OPA (Gatekeeper-mirror policies) all pass. Runs the exact same
+# scripts/security-gates.sh used locally, and uploads the run evidence.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install kubesec, tfsec, conftest
+        run: |
+          set -euo pipefail
+          KUBESEC_VERSION=2.14.0
+          TFSEC_VERSION=1.28.14
+          CONFTEST_VERSION=0.50.0
+          bindir="$HOME/.local/bin"
+          mkdir -p "$bindir"
+          echo "$bindir" >> "$GITHUB_PATH"
+          tmp="$(mktemp -d)"
+          curl -sSL "https://github.com/controlplaneio/kubesec/releases/download/v${KUBESEC_VERSION}/kubesec_linux_amd64.tar.gz" | tar -xz -C "$tmp"
+          mv "$tmp/kubesec" "$bindir/kubesec"
+          curl -sSL -o "$bindir/tfsec" "https://github.com/aquasecurity/tfsec/releases/download/v${TFSEC_VERSION}/tfsec-linux-amd64"
+          curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz" | tar -xz -C "$tmp" conftest
+          mv "$tmp/conftest" "$bindir/conftest"
+          chmod +x "$bindir"/kubesec "$bindir"/tfsec "$bindir"/conftest
+          kubesec version
+          tfsec --version
+          conftest --version
+
+      - name: Run security gates
+        run: ./scripts/security-gates.sh
+
+      # Preserve evidence for EVERY run (including failures) — this is the
+      # audit trail: rendered manifests + each tool's JSON/text + summary.
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-evidence-${{ github.run_id }}
+          path: security/reports/
+          if-no-files-found: error
+          retention-days: 30

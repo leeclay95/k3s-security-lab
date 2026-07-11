@@ -45,3 +45,6 @@ __pycache__/
 # floci (local AWS emulator) persistent data — contains Secrets Manager values,
 # KMS material, and other local state. Never commit.
 floci-data/
+
+# Security-gate run evidence (uploaded as CI artifacts; not committed)
+security/reports/
