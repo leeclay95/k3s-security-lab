@@ -132,6 +132,36 @@ curl -s http://localhost:4566/_localstack/health | jq '.services | keys'
 # Required: secretsmanager, kms, iam, sts, ecr, rds, s3, cloudwatch, logs, sns
 ```
 
+### Docker must trust the floci ECR registry (HTTP)
+
+The floci/LocalStack ECR endpoint
+(`000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:5100`) serves plain
+**HTTP**. Docker only pushes over HTTP to a registry it considers *insecure* —
+either the host resolves into `127.0.0.0/8` (Docker auto-trusts loopback) or it's
+listed in `insecure-registries`.
+
+On most distros `localhost.localstack.cloud` resolves to `127.0.0.1`, so it just
+works. On **Ubuntu**, `systemd-resolved` strips loopback answers from upstream
+DNS (rebinding protection), so the host no longer looks like loopback and the
+`ecr_push` fails mid-`terraform apply` with:
+
+```
+http: server gave HTTP response to HTTPS client
+```
+
+Fix once (needs sudo — edits the Docker daemon config and restarts it):
+
+```bash
+echo '{"insecure-registries":["000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:5100"]}' | sudo tee /etc/docker/daemon.json
+sudo systemctl restart docker
+```
+
+> If `/etc/docker/daemon.json` already exists, merge the `insecure-registries`
+> key instead of overwriting the file.
+
+`make deploy` runs `make preflight` first, which detects this and prints the fix
+before the multi-minute Terraform apply. Skip it with `SKIP_DOCKER_PREFLIGHT=1`.
+
 ---
 
 ## Apply Order
