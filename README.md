@@ -488,6 +488,40 @@ helm diff upgrade webapp charts/webapp/ -n webapp
 
 ---
 
+## After a reboot: `make reboot`
+
+A host reboot restarts the k3d node container, which breaks several things a
+plain `kubectl get pods` won't explain — and they compound:
+
+| Symptom | Cause |
+| --- | --- |
+| Pods stuck `ContainerCreating`, `failed to setup network ... /run/flannel/subnet.env` | flannel's subnet file lives on tmpfs (`/run`), wiped on node restart |
+| ESO `SecretSyncedError`, `lookup host.k3d.internal ... i/o timeout` | k3s strips `host.k3d.internal` from CoreDNS on restart |
+| webapp `ImagePullBackOff`, `dial tcp 127.0.0.1:5100: connection refused` | the image dropped out of the node's containerd; the node can't pull the floci ECR ref |
+| ESO/webapp errors, floci unreachable | floci container down / lost un-flushed data |
+
+`make reboot` diagnoses and auto-heals all of them (idempotent, safe to run
+anytime — it never touches Terraform state, floci secrets, or the infra/secrets
+roots):
+
+```bash
+make reboot
+```
+
+It checks and fixes, in order: floci up → cluster started → **flannel** (bounces
+the node if `subnet.env` is missing) → **host.k3d.internal** (durable
+coredns-custom mapping) → **webapp image on the node** (see below) → ESO
+re-sync → log shipper → webapp rollout, then prints status and the app HTTP code.
+
+> **Image loading on modern Docker.** If `docker info` shows the
+> `containerd-snapshotter` image store (default on recent Docker/Ubuntu),
+> `k3d image import` silently no-ops (its `docker save` output is an OCI layout
+> the importer rejects: *"content digest not found"*). `make deploy` and
+> `make reboot` both use `scripts/ensure-webapp-image.sh`, which verifies the
+> image actually landed and falls back to pulling the identical upstream image
+> into the node's containerd and retagging it. So the image step is reliable
+> regardless of Docker's storage driver.
+
 ## Key Commands
 
 ```bash

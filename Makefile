@@ -54,7 +54,7 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy nuke bootstrap preflight cluster-up floci-up floci-down log-shipper argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
+.PHONY: help deploy destroy nuke bootstrap preflight cluster-up reboot floci-up floci-down log-shipper argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -129,6 +129,9 @@ floci-down: ## Stop the floci AWS emulator
 
 preflight: ## Fail fast if Docker can't push to the floci ECR registry over HTTP
 	@./scripts/preflight-docker-registry.sh
+
+reboot: ## Diagnose + auto-heal the lab after a host reboot (flannel, DNS, image, ESO)
+	@./scripts/recover.sh
 
 bootstrap: preflight floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the required order
 	@echo "==> floci up; applying secrets (pass 1, no KMS)"

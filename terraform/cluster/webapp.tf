@@ -12,7 +12,11 @@
 resource "null_resource" "ecr_image_import" {
   depends_on = [time_sleep.cluster_ready]
 
+  # Load the image onto the node robustly. `k3d image import` silently no-ops on
+  # Docker's containerd-snapshotter store (default on recent Docker/Ubuntu), so
+  # this helper verifies the image actually landed and falls back to a
+  # pull+retag if not. See scripts/ensure-webapp-image.sh.
   provisioner "local-exec" {
-    command = "k3d image import 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:5100/webapp/nginx:1.27 -c webapp-test"
+    command = "${path.module}/../../scripts/ensure-webapp-image.sh webapp-test"
   }
 }
