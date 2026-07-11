@@ -54,7 +54,7 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy nuke bootstrap cluster-up floci-up floci-down log-shipper argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
+.PHONY: help deploy destroy nuke bootstrap preflight cluster-up floci-up floci-down log-shipper argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -127,7 +127,10 @@ floci-up: ## Start the floci AWS emulator (:4566) via docker compose
 floci-down: ## Stop the floci AWS emulator
 	$(COMPOSE) down
 
-bootstrap: floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the required order
+preflight: ## Fail fast if Docker can't push to the floci ECR registry over HTTP
+	@./scripts/preflight-docker-registry.sh
+
+bootstrap: preflight floci-up ## Start floci + apply secrets->infra->secrets(KMS) in the required order
 	@echo "==> floci up; applying secrets (pass 1, no KMS)"
 	$(RETRY) 'cd $(TF_SECRETS) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)" -var="api_key=$(API_KEY)" -var="secret_key=$(SECRET_KEY)"'
 	@echo "==> applying infra (KMS, IAM role for ESO, ECR, RDS)"
@@ -189,7 +192,7 @@ url: ## Print the webapp URL
 # roots take sensitive vars — supply them via a gitignored terraform.tfvars in
 # each root (or -var on the CLI). Apply order is: infra -> secrets -> deploy.
 
-infra: ## Apply terraform/infra only (KMS, IAM, ECR, RDS)
+infra: preflight ## Apply terraform/infra only (KMS, IAM, ECR, RDS)
 	cd $(TF_INFRA) && $(TF) init -input=false && $(TF) apply $(APPROVE) -var="db_password=$(DB_PASSWORD)"
 
 secrets: ## Apply terraform/secrets only (Secrets Manager, no KMS) — see bootstrap for the full order
