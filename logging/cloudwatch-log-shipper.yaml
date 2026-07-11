@@ -1,0 +1,97 @@
+# Ships the webapp pod's container logs from the node into floci CloudWatch Logs
+# (/k8s/webapp/app), so the log group provisioned by terraform/infra actually
+# fills up. Lab-grade: a hardened aws-cli DaemonSet that tails the node's pod
+# log files and PutLogEvents them to floci at host.k3d.internal:4566.
+#
+# Lives in its OWN `logging` namespace on purpose: the webapp-scoped Gatekeeper
+# constraints don't apply here, and it's outside the Argo-managed webapp chart.
+# Still hardened (non-root, drop-ALL, read-only rootfs, limits). It runs as
+# uid 65534 / GID 0 so it can read the root:root, group-readable node logs
+# without being root. hostPath is inherent to any node log collector.
+#
+# Apply:  kubectl --context k3d-webapp-test apply -f logging/cloudwatch-log-shipper.yaml
+# Verify: aws --endpoint-url=http://localhost:4566 logs filter-log-events --log-group-name /k8s/webapp/app
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logging
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cloudwatch-log-shipper
+  namespace: logging
+  labels:
+    app: cloudwatch-log-shipper
+spec:
+  selector:
+    matchLabels:
+      app: cloudwatch-log-shipper
+  template:
+    metadata:
+      labels:
+        app: cloudwatch-log-shipper
+    spec:
+      terminationGracePeriodSeconds: 5
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 0 # GID 0 to read the root:root group-readable node logs
+        seccompProfile:
+          type: RuntimeDefault
+      tolerations:
+        - operator: Exists # schedule on every node regardless of taints
+      containers:
+        - name: shipper
+          image: amazon/aws-cli:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -u
+              EP="http://host.k3d.internal:4566"
+              GROUP="/k8s/webapp/app"
+              STREAM="${NODE_NAME:-webapp-node}"
+              export HOME=/tmp
+              aws --endpoint-url "$EP" --region us-east-1 logs create-log-group  --log-group-name "$GROUP" 2>/dev/null || true
+              aws --endpoint-url "$EP" --region us-east-1 logs create-log-stream --log-group-name "$GROUP" --log-stream-name "$STREAM" 2>/dev/null || true
+              echo "shipping /var/log/pods/webapp_*/*/*.log -> $GROUP (stream $STREAM)"
+              tail -q -n 5 -F /var/log/pods/webapp_*/*/*.log 2>/dev/null | while IFS= read -r line; do
+                [ -z "$line" ] && continue
+                ts="$(date +%s)000"
+                esc="$(printf '%s' "$line" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+                aws --endpoint-url "$EP" --region us-east-1 logs put-log-events --log-group-name "$GROUP" --log-stream-name "$STREAM" --log-events "[{\"timestamp\":${ts},\"message\":\"${esc}\"}]" >/dev/null 2>&1 || true
+              done
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: AWS_ACCESS_KEY_ID
+              value: "test"
+            - name: AWS_SECRET_ACCESS_KEY
+              value: "test"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - name: pod-logs
+              mountPath: /var/log/pods
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: pod-logs
+          hostPath:
+            path: /var/log/pods
+            type: Directory
+        - name: tmp
+          emptyDir: {}
