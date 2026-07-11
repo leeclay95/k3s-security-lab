@@ -54,7 +54,7 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy bootstrap cluster-up floci-up floci-down argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
+.PHONY: help deploy destroy nuke bootstrap cluster-up floci-up floci-down argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -62,14 +62,20 @@ help: ## Show this help
 cluster-up: ## Start the k3d cluster if it exists but was stopped (e.g. after a reboot)
 	@# Terraform's null_resource can't tell a stopped cluster from a healthy one,
 	@# so self-heal here: if the cluster exists but its server is down, start it.
+	@# After a restart k3s strips k3d's host.k3d.internal record from CoreDNS, so
+	@# re-assert it durably (else ESO can't reach floci — the classic post-reboot
+	@# SecretStore InvalidProviderConfig). No-op/quiet if the cluster is absent.
 	@if k3d cluster list webapp-test >/dev/null 2>&1; then \
 		k3d cluster start webapp-test 2>/dev/null || true; \
+		./scripts/coredns-hostfix.sh webapp-test || true; \
 	fi
 
 deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + cluster + webapp
 	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) init -input=false'
 	@echo "==> Pass 1/3: create the k3d cluster"
 	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=null_resource.k3d_cluster -target=time_sleep.cluster_ready'
+	@echo "==> Make host.k3d.internal resolution durable (survives reboots) before ESO installs"
+	./scripts/coredns-hostfix.sh webapp-test
 	@echo "==> Pass 2/3: install Gatekeeper + ESO + Argo CD controllers"
 	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=helm_release.gatekeeper -target=time_sleep.gatekeeper_ready -target=helm_release.eso -target=time_sleep.eso_ready -target=helm_release.argocd -target=time_sleep.argocd_ready'
 	@echo "==> Pass 3/3: import image, wait for ESO CRDs, plant Argo Application, wait for webapp Healthy"
@@ -77,8 +83,33 @@ deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + c
 	@echo "==> Done. webapp owned by Argo CD and verified Healthy. Access info:"
 	@$(MAKE) --no-print-directory access
 
-destroy: ## Tear down the k3d cluster (secrets/ and infra/ are left intact)
-	cd $(TF_CLUSTER) && $(TF) destroy $(APPROVE)
+destroy: ## Reliably tear down the k3d cluster end-to-end (floci/secrets/infra intact)
+	@# Reliability contract: the cluster is GONE when this returns, no matter what
+	@# state Terraform/Helm are in. Two layers:
+	@#   1. graceful `terraform destroy` to keep TF state in sync — but tolerated
+	@#      (leading '-'), because it destroys the k3d cluster LAST, gated behind
+	@#      `helm uninstall` of ESO/Argo/Gatekeeper. A stuck release (e.g. a
+	@#      half-uninstalled ESO) makes that hang until "context deadline exceeded"
+	@#      and abort BEFORE the cluster is ever deleted.
+	@#   2. `k3d cluster delete` backstop — removes the node container and ALL
+	@#      cluster state (every namespace, Argo, ESO, webapp) in one shot. It does
+	@#      not depend on TF/Helm state or API reachability, so it always succeeds.
+	@# Then reset the cluster-root state: everything in terraform/cluster lives and
+	@# dies with the cluster, so clearing it guarantees the next `make deploy`
+	@# starts from a clean slate instead of reconciling now-nonexistent resources.
+	@echo "==> Graceful attempt: terraform destroy (best-effort, time-boxed to 120s)"
+	@# Time-boxed so a stuck `helm uninstall` (context-deadline hang, seen when ESO
+	@# is half-removed) can't stall teardown — the backstop below is authoritative.
+	-timeout 120 sh -c 'cd $(TF_CLUSTER) && $(TF) destroy $(APPROVE)'
+	@echo "==> Backstop: force-delete the k3d cluster (guarantees teardown)"
+	-k3d cluster delete webapp-test
+	@echo "==> Reset cluster-root Terraform state (it is 100% cluster-ephemeral)"
+	-rm -f $(TF_CLUSTER)/terraform.tfstate $(TF_CLUSTER)/terraform.tfstate.backup
+	@echo "==> Destroyed. Verify (expect: no webapp-test cluster):"
+	-k3d cluster list webapp-test
+
+nuke: destroy floci-down ## destroy + stop floci (full local teardown; secrets/infra state kept)
+	@echo "==> floci stopped. secrets/ and infra/ Terraform state are preserved."
 
 floci-up: ## Start the floci AWS emulator (:4566) via docker compose
 	$(COMPOSE) up -d

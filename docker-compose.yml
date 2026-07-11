@@ -1,13 +1,17 @@
 services:
   floci:
     image: floci/floci:latest
+    restart: unless-stopped # auto-start on host reboot (matches k3d containers)
     ports:
       - "4566:4566"
     environment:
       - FLOCI_IAM_ENFORCE=true # THIS IS THE KEY
       - FLOCI_STORAGE_MODE=hybrid
-      - FLOCI_STORAGE_PERSISTENT_PATH=/data
+      # floci's live data dir is /app/data, not /data — persist THAT to the host
+      - FLOCI_STORAGE_PERSISTENT_PATH=/app/data
       - FLOCI_SERVICES_LAMBDA_DOCKER_NETWORK=floci_default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./floci-data:/data
+      # bind the host dir to floci's real data dir so secrets/KMS survive
+      # container recreation and host reboots (was ./floci-data:/data — empty)
+      - ./floci-data:/app/data

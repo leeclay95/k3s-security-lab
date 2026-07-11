@@ -41,3 +41,7 @@ deploy.log
 # Python cache
 __pycache__/
 *.pyc
+
+# floci (local AWS emulator) persistent data — contains Secrets Manager values,
+# KMS material, and other local state. Never commit.
+floci-data/
