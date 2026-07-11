@@ -54,7 +54,7 @@ SECRET_KEY  ?= s3cr3t
 
 .DEFAULT_GOAL := help
 
-.PHONY: help deploy destroy nuke bootstrap cluster-up floci-up floci-down argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
+.PHONY: help deploy destroy nuke bootstrap cluster-up floci-up floci-down log-shipper argo-app argo-ui argo-password webapp-ui argo-pause argo-resume access status url infra secrets clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -80,8 +80,15 @@ deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + c
 	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE) -target=helm_release.gatekeeper -target=time_sleep.gatekeeper_ready -target=helm_release.eso -target=time_sleep.eso_ready -target=helm_release.argocd -target=time_sleep.argocd_ready'
 	@echo "==> Pass 3/3: import image, wait for ESO CRDs, plant Argo Application, wait for webapp Healthy"
 	$(RETRY) 'cd $(TF_CLUSTER) && $(TF) apply $(APPROVE)'
+	@echo "==> Deploy CloudWatch log shipper (webapp logs -> floci CloudWatch)"
+	@# Tolerated ('-'): an optional add-on shouldn't fail the core deploy.
+	-@$(MAKE) --no-print-directory log-shipper
 	@echo "==> Done. webapp owned by Argo CD and verified Healthy. Access info:"
 	@$(MAKE) --no-print-directory access
+
+log-shipper: ## Ship webapp logs to floci CloudWatch (/k8s/webapp/app) via a hardened DaemonSet
+	$(KUBECTL) apply -f logging/cloudwatch-log-shipper.yaml
+	$(KUBECTL) -n logging rollout status daemonset/cloudwatch-log-shipper --timeout=120s
 
 destroy: ## Reliably tear down the k3d cluster end-to-end (floci/secrets/infra intact)
 	@# Reliability contract: the cluster is GONE when this returns, no matter what

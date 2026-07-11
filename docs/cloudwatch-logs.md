@@ -10,9 +10,14 @@ container logs from the node into `/k8s/webapp/app`, so the group actually fills
 
 ## Deploy the shipper
 
+`make deploy` brings it up automatically (Pass 3, tolerated so it can't fail the
+core deploy). To (re)apply it on its own:
+
 ```bash
-kubectl --context k3d-webapp-test apply -f logging/cloudwatch-log-shipper.yaml
-kubectl --context k3d-webapp-test -n logging rollout status daemonset/cloudwatch-log-shipper
+make log-shipper
+# equivalent to:
+#   kubectl --context k3d-webapp-test apply -f logging/cloudwatch-log-shipper.yaml
+#   kubectl --context k3d-webapp-test -n logging rollout status daemonset/cloudwatch-log-shipper
 ```
 
 ## Make traffic and read it back from CloudWatch
