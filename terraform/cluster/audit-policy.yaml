@@ -1,0 +1,50 @@
+# Kubernetes API-server audit policy for the lab. Focused + low-volume: it logs
+# the security-relevant events and drops routine read noise, so the lab log
+# shipper can forward it to floci CloudWatch (/k8s/webapp/audit) without flooding.
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - RequestReceived
+rules:
+  # Shell / attach / port-forward into a pod — "who got a shell", at Request level
+  # so the command shows up.
+  - level: Request
+    resources:
+      - group: ""
+        resources: ["pods/exec", "pods/attach", "pods/portforward"]
+
+  # Workload lifecycle: rollout restarts, deletes, scaling, deploys.
+  - level: Metadata
+    verbs: ["create", "delete", "patch", "update", "deletecollection"]
+    resources:
+      - group: ""
+        resources: ["pods"]
+      - group: "apps"
+        resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
+
+  # Pod events (OOMKilled, BackOff, Killing, Started, Unhealthy) in the webapp
+  # namespace — this is how crash-restarts show up. Request level to keep the
+  # reason/message.
+  - level: Request
+    verbs: ["create", "patch"]
+    namespaces: ["webapp"]
+    resources:
+      - group: ""
+        resources: ["events"]
+      - group: "events.k8s.io"
+        resources: ["events"]
+
+  # Secret / ConfigMap access — metadata only, never log secret values.
+  - level: Metadata
+    resources:
+      - group: ""
+        resources: ["secrets", "configmaps"]
+
+  # RBAC changes.
+  - level: Metadata
+    resources:
+      - group: "rbac.authorization.k8s.io"
+        resources: ["*"]
+
+  # Drop everything else — keeps the audit stream sane for the lab shipper.
+  - level: None

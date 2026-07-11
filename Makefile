@@ -65,9 +65,12 @@ cluster-up: ## Start the k3d cluster if it exists but was stopped (e.g. after a 
 	@# After a restart k3s strips k3d's host.k3d.internal record from CoreDNS, so
 	@# re-assert it durably (else ESO can't reach floci — the classic post-reboot
 	@# SecretStore InvalidProviderConfig). No-op/quiet if the cluster is absent.
+	@# Also re-apply the log shipper: a stopped-then-started cluster keeps its
+	@# workloads, but this makes a post-reboot cluster-up self-heal it too.
 	@if k3d cluster list webapp-test >/dev/null 2>&1; then \
 		k3d cluster start webapp-test 2>/dev/null || true; \
 		./scripts/coredns-hostfix.sh webapp-test || true; \
+		$(MAKE) --no-print-directory log-shipper 2>/dev/null || true; \
 	fi
 
 deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + cluster + webapp
@@ -86,7 +89,7 @@ deploy: bootstrap cluster-up ## Full ordered deploy: floci + secrets + infra + c
 	@echo "==> Done. webapp owned by Argo CD and verified Healthy. Access info:"
 	@$(MAKE) --no-print-directory access
 
-log-shipper: ## Ship webapp logs to floci CloudWatch (/k8s/webapp/app) via a hardened DaemonSet
+log-shipper: ## Ship webapp app + audit logs to floci CloudWatch via a hardened DaemonSet
 	$(KUBECTL) apply -f logging/cloudwatch-log-shipper.yaml
 	$(KUBECTL) -n logging rollout status daemonset/cloudwatch-log-shipper --timeout=120s
 
