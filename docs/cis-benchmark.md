@@ -23,7 +23,20 @@ without a CIS→STIG cross-map. See the STIG workflow for that path.
 
 ## Run it
 
-Save as `kube-bench-k3s.yaml` and apply to the cluster:
+A ready-to-apply Job with **standard text output** is committed at
+[`security/kube-bench-cis-job.yaml`](../security/kube-bench-cis-job.yaml):
+
+```bash
+KC="kubectl --context k3d-webapp-test"
+$KC apply -f security/kube-bench-cis-job.yaml
+$KC wait --for=condition=complete job/kube-bench-cis -n default --timeout=120s
+$KC logs job/kube-bench-cis -n default        # PASS/FAIL/WARN/INFO + remediation + summary
+# re-run: delete the Job first (name is fixed), then re-apply
+$KC delete job kube-bench-cis -n default --ignore-not-found
+```
+
+To capture **JSON** instead (for archiving under `benchmark-results/`), use the
+same Job with `--json` added to the command — inline below:
 
 ```yaml
 apiVersion: batch/v1
