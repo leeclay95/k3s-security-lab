@@ -1,0 +1,2454 @@
+{
+  "Controls": [
+    {
+      "id": "1",
+      "version": "k3s-cis-1.24",
+      "detected_version": "none",
+      "text": "Control Plane Security Configuration",
+      "node_type": "master",
+      "tests": [
+        {
+          "section": "1.1",
+          "type": "",
+          "pass": 8,
+          "fail": 0,
+          "warn": 1,
+          "info": 12,
+          "desc": "Control Plane Node Configuration Files",
+          "results": [
+            {
+              "test_number": "1.1.1",
+              "test_desc": "Ensure that the API server pod specification file permissions are set to 644 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/kube-apiserver.yaml; then stat -c permissions=%a /etc/kubernetes/manifests/kube-apiserver.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds the api server within the k3s process. There is no API server pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds the api server within the k3s process. There is no API server pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.2",
+              "test_desc": "Ensure that the API server pod specification file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/kube-apiserver.yaml; then stat -c %U:%G /etc/kubernetes/manifests/kube-apiserver.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds the api server within the k3s process. There is no API server pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds the api server within the k3s process. There is no API server pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.3",
+              "test_desc": "Ensure that the controller manager pod specification file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/kube-controller-manager.yaml; then stat -c permissions=%a /etc/kubernetes/manifests/kube-controller-manager.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds the controller manager within the k3s process. There is no controller manager pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds the controller manager within the k3s process. There is no controller manager pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.4",
+              "test_desc": "Ensure that the controller manager pod specification file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/kube-controller-manager.yaml; then stat -c %U:%G /etc/kubernetes/manifests/kube-controller-manager.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds the controller manager within the k3s process. There is no controller manager pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds the controller manager within the k3s process. There is no controller manager pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.5",
+              "test_desc": "Ensure that the scheduler pod specification file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/kube-scheduler.yaml; then stat -c permissions=%a /etc/kubernetes/manifests/kube-scheduler.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds the scheduler within the k3s process. There is no scheduler pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds the scheduler within the k3s process. There is no scheduler pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.6",
+              "test_desc": "Ensure that the scheduler pod specification file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/kube-scheduler.yaml; then stat -c %U:%G /etc/kubernetes/manifests/kube-scheduler.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds the scheduler within the k3s process. There is no scheduler pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds the scheduler within the k3s process. There is no scheduler pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.7",
+              "test_desc": "Ensure that the etcd pod specification file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/etcd.yaml; then stat -c permissions=%a /etc/kubernetes/manifests/etcd.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds etcd within the k3s process. There is no etcd pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds etcd within the k3s process. There is no etcd pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.8",
+              "test_desc": "Ensure that the etcd pod specification file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/kubernetes/manifests/etcd.yaml; then stat -c %U:%G /etc/kubernetes/manifests/etcd.yaml; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s embeds etcd within the k3s process. There is no etcd pod specification file.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s embeds etcd within the k3s process. There is no etcd pod specification file.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.9",
+              "test_desc": "Ensure that the Container Network Interface file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "find /var/lib/cni/networks -type f ! -name lock 2> /dev/null | xargs --no-run-if-empty stat -c permissions=%a",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nThe default K3s CNI, flannel, does not create any files in /var/lib/cni/networks.\n",
+              "test_info": [
+                "Not Applicable.\nThe default K3s CNI, flannel, does not create any files in /var/lib/cni/networks.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": true,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.10",
+              "test_desc": "Ensure that the Container Network Interface file ownership is set to root:root (Automated)",
+              "audit": "find /var/lib/cni/networks -type f 2> /dev/null | xargs --no-run-if-empty stat -c %U:%G\\",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nThe default K3s CNI, flannel, does not create any files in /var/lib/cni/networks.\n",
+              "test_info": [
+                "Not Applicable.\nThe default K3s CNI, flannel, does not create any files in /var/lib/cni/networks.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": true,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.11",
+              "test_desc": "Ensure that the etcd data directory permissions are set to 700 or more restrictive (Automated)",
+              "audit": "if [ \"$(journalctl -m -u k3s | grep -m1 'Managed etcd cluster' | wc -l)\" -gt 0 ]; then\n  stat -c permissions=%a /var/lib/rancher/k3s/server/db/etcd\nelse\n  echo \"permissions=700\"\nfi\n",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "On the etcd server node, get the etcd data directory, passed as an argument --data-dir,\nfrom the command 'ps -ef | grep etcd'.\nRun the below command (based on the etcd data directory found above). For example,\nchmod 700 /var/lib/etcd\n",
+              "test_info": [
+                "On the etcd server node, get the etcd data directory, passed as an argument --data-dir,\nfrom the command 'ps -ef | grep etcd'.\nRun the below command (based on the etcd data directory found above). For example,\nchmod 700 /var/lib/etcd\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found\npermissions=700",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "permissions has permissions 700, expected 700 or more restrictive"
+            },
+            {
+              "test_number": "1.1.12",
+              "test_desc": "Ensure that the etcd data directory ownership is set to etcd:etcd (Automated)",
+              "audit": "ps -ef | grep containerd | grep -- --data-dir | sed 's%.*data-dir[= ]\\([^ ]*\\).*%\\1%' | xargs stat -c %U:%G",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nFor K3s, etcd is embedded within the k3s process. There is no separate etcd process.\nTherefore the etcd data directory ownership is managed by the k3s process and should be root:root.\n",
+              "test_info": [
+                "Not Applicable.\nFor K3s, etcd is embedded within the k3s process. There is no separate etcd process.\nTherefore the etcd data directory ownership is managed by the k3s process and should be root:root.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.13",
+              "test_desc": "Ensure that the admin.conf file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/server/cred/admin.kubeconfig; then stat -c permissions=%a /var/lib/rancher/k3s/server/cred/admin.kubeconfig; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example, chmod 600 /var/lib/rancher/k3s/server/cred/admin.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example, chmod 600 /var/lib/rancher/k3s/server/cred/admin.kubeconfig\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.1.14",
+              "test_desc": "Ensure that the admin.conf file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/server/cred/admin.kubeconfig; then stat -c %U:%G /var/lib/rancher/k3s/server/cred/admin.kubeconfig; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example, chown root:root /var/lib/rancher/k3s/server/cred/admin.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example, chown root:root /var/lib/rancher/k3s/server/cred/admin.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'root:root' is equal to 'root:root'"
+            },
+            {
+              "test_number": "1.1.15",
+              "test_desc": "Ensure that the scheduler.conf file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig; then stat -c permissions=%a /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "permissions=600",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "permissions has permissions 600, expected 600 or more restrictive"
+            },
+            {
+              "test_number": "1.1.16",
+              "test_desc": "Ensure that the scheduler.conf file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig; then stat -c %U:%G /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchown root:root /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchown root:root /var/lib/rancher/k3s/server/cred/scheduler.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'root:root' is present"
+            },
+            {
+              "test_number": "1.1.17",
+              "test_desc": "Ensure that the controller-manager.conf file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/server/cred/controller.kubeconfig; then stat -c permissions=%a /var/lib/rancher/k3s/server/cred/controller.kubeconfig; fi'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/server/cred/controller.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/server/cred/controller.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "permissions=600",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "permissions has permissions 600, expected 600 or more restrictive"
+            },
+            {
+              "test_number": "1.1.18",
+              "test_desc": "Ensure that the controller-manager.conf file ownership is set to root:root (Automated)",
+              "audit": "stat -c %U:%G /var/lib/rancher/k3s/server/tls",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchown root:root /var/lib/rancher/k3s/server/cred/controller.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchown root:root /var/lib/rancher/k3s/server/cred/controller.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'root:root' is equal to 'root:root'"
+            },
+            {
+              "test_number": "1.1.19",
+              "test_desc": "Ensure that the Kubernetes PKI directory and file ownership is set to root:root (Automated)",
+              "audit": "find /var/lib/rancher/k3s/server/tls | xargs stat -c %U:%G",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchown -R root:root /etc/kubernetes/pki/\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the control plane node.\nFor example,\nchown -R root:root /etc/kubernetes/pki/\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root\nroot:root",
+              "scored": true,
+              "IsMultiple": true,
+              "expected_result": "'root:root' is present"
+            },
+            {
+              "test_number": "1.1.20",
+              "test_desc": "Ensure that the Kubernetes PKI certificate file permissions are set to 600 or more restrictive (Manual)",
+              "audit": "/bin/sh -c 'stat -c permissions=%a /var/lib/rancher/k3s/server/tls/*.crt'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the master node.\nFor example,\nchmod -R 600 /var/lib/rancher/k3s/server/tls/*.crt\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the master node.\nFor example,\nchmod -R 600 /var/lib/rancher/k3s/server/tls/*.crt\n"
+              ],
+              "status": "WARN",
+              "actual_value": "permissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644\npermissions=644",
+              "scored": false,
+              "IsMultiple": true,
+              "expected_result": "permissions has permissions 644, expected 600 or more restrictive"
+            },
+            {
+              "test_number": "1.1.21",
+              "test_desc": "Ensure that the Kubernetes PKI key file permissions are set to 600 (Automated)",
+              "audit": "/bin/sh -c 'stat -c permissions=%a /var/lib/rancher/k3s/server/tls/*.key'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the master node.\nFor example,\nchmod -R 600 /var/lib/rancher/k3s/server/tls/*.key\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the master node.\nFor example,\nchmod -R 600 /var/lib/rancher/k3s/server/tls/*.key\n"
+              ],
+              "status": "PASS",
+              "actual_value": "permissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600\npermissions=600",
+              "scored": true,
+              "IsMultiple": true,
+              "expected_result": "permissions has permissions 600, expected 600 or more restrictive"
+            }
+          ]
+        },
+        {
+          "section": "1.2",
+          "type": "",
+          "pass": 5,
+          "fail": 16,
+          "warn": 10,
+          "info": 1,
+          "desc": "API Server",
+          "results": [
+            {
+              "test_number": "1.2.1",
+              "test_desc": "Ensure that the --anonymous-auth argument is set to false (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'anonymous-auth'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --anonymous-auth argument to false. If it is set to true,\nedit the K3s config file /etc/rancher/k3s/config.yaml and remove anything similar to below.\nkube-apiserver-arg:\n  - \"anonymous-auth=true\"\n",
+              "test_info": [
+                "By default, K3s sets the --anonymous-auth argument to false. If it is set to true,\nedit the K3s config file /etc/rancher/k3s/config.yaml and remove anything similar to below.\nkube-apiserver-arg:\n  - \"anonymous-auth=true\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'anonymous-auth'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.2",
+              "test_desc": "Ensure that the --token-auth-file parameter is not set (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Follow the documentation and configure alternate mechanisms for authentication.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove anything similar to below.\nkube-apiserver-arg:\n  - \"token-auth-file=<path>\"\n",
+              "test_info": [
+                "Follow the documentation and configure alternate mechanisms for authentication.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove anything similar to below.\nkube-apiserver-arg:\n  - \"token-auth-file=<path>\"\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--token-auth-file' is not present"
+            },
+            {
+              "test_number": "1.2.3",
+              "test_desc": "Ensure that the --DenyServiceExternalIPs is not set (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set DenyServiceExternalIPs.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=DenyServiceExternalIPs\"\n",
+              "test_info": [
+                "By default, K3s does not set DenyServiceExternalIPs.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=DenyServiceExternalIPs\"\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--enable-admission-plugins' is present OR '--enable-admission-plugins' is not present"
+            },
+            {
+              "test_number": "1.2.4",
+              "test_desc": "Ensure that the --kubelet-https argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Edit the API server pod specification file /etc/kubernetes/manifests/kube-apiserver.yaml\non the control plane node and remove the --kubelet-https parameter.\n",
+              "test_info": [
+                "Edit the API server pod specification file /etc/kubernetes/manifests/kube-apiserver.yaml\non the control plane node and remove the --kubelet-https parameter.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "1.2.5",
+              "test_desc": "Ensure that the --kubelet-client-certificate and --kubelet-client-key arguments are set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'kubelet-certificate-authority'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the kubelet client certificate and key.\nThey are generated and located at /var/lib/rancher/k3s/server/tls/client-kube-apiserver.crt and /var/lib/rancher/k3s/server/tls/client-kube-apiserver.key\nIf for some reason you need to provide your own certificate and key, you can set the\nbelow parameters in the K3s config file /etc/rancher/k3s/config.yaml.\nkube-apiserver-arg:\n  - \"kubelet-client-certificate=<path/to/client-cert-file>\"\n  - \"kubelet-client-key=<path/to/client-key-file>\"\n",
+              "test_info": [
+                "By default, K3s automatically provides the kubelet client certificate and key.\nThey are generated and located at /var/lib/rancher/k3s/server/tls/client-kube-apiserver.crt and /var/lib/rancher/k3s/server/tls/client-kube-apiserver.key\nIf for some reason you need to provide your own certificate and key, you can set the\nbelow parameters in the K3s config file /etc/rancher/k3s/config.yaml.\nkube-apiserver-arg:\n  - \"kubelet-client-certificate=<path/to/client-cert-file>\"\n  - \"kubelet-client-key=<path/to/client-key-file>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'kubelet-certificate-authority'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.6",
+              "test_desc": "Ensure that the --kubelet-certificate-authority argument is set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'kubelet-certificate-authority'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Follow the Kubernetes documentation and setup the TLS connection between\nthe apiserver and kubelets. Then, edit the API server pod specification file\n/etc/kubernetes/manifests/kube-apiserver.yaml on the control plane node and set the\n--kubelet-certificate-authority parameter to the path to the cert file for the certificate authority.\n--kubelet-certificate-authority=<ca-string>\n",
+              "test_info": [
+                "Follow the Kubernetes documentation and setup the TLS connection between\nthe apiserver and kubelets. Then, edit the API server pod specification file\n/etc/kubernetes/manifests/kube-apiserver.yaml on the control plane node and set the\n--kubelet-certificate-authority parameter to the path to the cert file for the certificate authority.\n--kubelet-certificate-authority=<ca-string>\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'kubelet-certificate-authority'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.7",
+              "test_desc": "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'authorization-mode'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the --authorization-mode to AlwaysAllow.\nIf this check fails, edit K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-apiserver-arg:\n  - \"authorization-mode=AlwaysAllow\"\n",
+              "test_info": [
+                "By default, K3s does not set the --authorization-mode to AlwaysAllow.\nIf this check fails, edit K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-apiserver-arg:\n  - \"authorization-mode=AlwaysAllow\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'authorization-mode'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.8",
+              "test_desc": "Ensure that the --authorization-mode argument includes Node (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'authorization-mode'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --authorization-mode to Node and RBAC.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml,\nensure that you are not overriding authorization-mode.\n",
+              "test_info": [
+                "By default, K3s sets the --authorization-mode to Node and RBAC.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml,\nensure that you are not overriding authorization-mode.\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'authorization-mode'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.9",
+              "test_desc": "Ensure that the --authorization-mode argument includes RBAC (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'authorization-mode'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --authorization-mode to Node and RBAC.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml,\nensure that you are not overriding authorization-mode.\n",
+              "test_info": [
+                "By default, K3s sets the --authorization-mode to Node and RBAC.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml,\nensure that you are not overriding authorization-mode.\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'authorization-mode'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.10",
+              "test_desc": "Ensure that the admission control plugin EventRateLimit is set (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Follow the Kubernetes documentation and set the desired limits in a configuration file.\nThen, edit the K3s config file /etc/rancher/k3s/config.yaml and set the below parameters.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=...,EventRateLimit,...\"\n  - \"admission-control-config-file=<path/to/configuration/file>\"\n",
+              "test_info": [
+                "Follow the Kubernetes documentation and set the desired limits in a configuration file.\nThen, edit the K3s config file /etc/rancher/k3s/config.yaml and set the below parameters.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=...,EventRateLimit,...\"\n  - \"admission-control-config-file=<path/to/configuration/file>\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.11",
+              "test_desc": "Ensure that the admission control plugin AlwaysAdmit is not set (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the --enable-admission-plugins to AlwaysAdmit.\nIf this check fails, edit K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=AlwaysAdmit\"\n",
+              "test_info": [
+                "By default, K3s does not set the --enable-admission-plugins to AlwaysAdmit.\nIf this check fails, edit K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=AlwaysAdmit\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.12",
+              "test_desc": "Ensure that the admission control plugin AlwaysPullImages is set (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Permissive, per CIS guidelines,\n\"This setting could impact offline or isolated clusters, which have images pre-loaded and\ndo not have access to a registry to pull in-use images. This setting is not appropriate for\nclusters which use this configuration.\"\nEdit the K3s config file /etc/rancher/k3s/config.yaml and set the below parameter.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=...,AlwaysPullImages,...\"\n",
+              "test_info": [
+                "Permissive, per CIS guidelines,\n\"This setting could impact offline or isolated clusters, which have images pre-loaded and\ndo not have access to a registry to pull in-use images. This setting is not appropriate for\nclusters which use this configuration.\"\nEdit the K3s config file /etc/rancher/k3s/config.yaml and set the below parameter.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=...,AlwaysPullImages,...\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.13",
+              "test_desc": "Ensure that the admission control plugin SecurityContextDeny is set if PodSecurityPolicy is not used (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Edit the API server pod specification file /etc/kubernetes/manifests/kube-apiserver.yaml\non the control plane node and set the --enable-admission-plugins parameter to include\nSecurityContextDeny, unless PodSecurityPolicy is already in place.\n--enable-admission-plugins=...,SecurityContextDeny,...\n",
+              "test_info": [
+                "Edit the API server pod specification file /etc/kubernetes/manifests/kube-apiserver.yaml\non the control plane node and set the --enable-admission-plugins parameter to include\nSecurityContextDeny, unless PodSecurityPolicy is already in place.\n--enable-admission-plugins=...,SecurityContextDeny,...\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.14",
+              "test_desc": "Ensure that the admission control plugin ServiceAccount is set (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'ServiceAccount'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the --disable-admission-plugins to anything.\nFollow the documentation and create ServiceAccount objects as per your environment.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"disable-admission-plugins=ServiceAccount\"\n",
+              "test_info": [
+                "By default, K3s does not set the --disable-admission-plugins to anything.\nFollow the documentation and create ServiceAccount objects as per your environment.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"disable-admission-plugins=ServiceAccount\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'ServiceAccount'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.15",
+              "test_desc": "Ensure that the admission control plugin NamespaceLifecycle is set (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the --disable-admission-plugins to anything.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"disable-admission-plugins=...,NamespaceLifecycle,...\"\n",
+              "test_info": [
+                "By default, K3s does not set the --disable-admission-plugins to anything.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"disable-admission-plugins=...,NamespaceLifecycle,...\"\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--disable-admission-plugins' is present OR '--disable-admission-plugins' is not present"
+            },
+            {
+              "test_number": "1.2.16",
+              "test_desc": "Ensure that the admission control plugin NodeRestriction is set (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --enable-admission-plugins to NodeRestriction.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, check that you are not overriding the admission plugins.\nIf you are, include NodeRestriction in the list.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=...,NodeRestriction,...\"\n",
+              "test_info": [
+                "By default, K3s sets the --enable-admission-plugins to NodeRestriction.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, check that you are not overriding the admission plugins.\nIf you are, include NodeRestriction in the list.\nkube-apiserver-arg:\n  - \"enable-admission-plugins=...,NodeRestriction,...\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'enable-admission-plugins'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.17",
+              "test_desc": "Ensure that the --secure-port argument is not set to 0 (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'secure-port'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the secure port to 6444.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"secure-port=<PORT>\"\n",
+              "test_info": [
+                "By default, K3s sets the secure port to 6444.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"secure-port=<PORT>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'secure-port'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.18",
+              "test_desc": "Ensure that the --profiling argument is set to false (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'profiling'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --profiling argument to false.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"profiling=true\"\n",
+              "test_info": [
+                "By default, K3s sets the --profiling argument to false.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"profiling=true\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'profiling'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.19",
+              "test_desc": "Ensure that the --audit-log-path argument is set (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-path'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Edit the K3s config file /etc/rancher/k3s/config.yaml and set the audit-log-path parameter to a suitable path and\nfile where you would like audit logs to be written, for example,\nkube-apiserver-arg:\n  - \"audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log\"\n",
+              "test_info": [
+                "Edit the K3s config file /etc/rancher/k3s/config.yaml and set the audit-log-path parameter to a suitable path and\nfile where you would like audit logs to be written, for example,\nkube-apiserver-arg:\n  - \"audit-log-path=/var/lib/rancher/k3s/server/logs/audit.log\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-path'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.20",
+              "test_desc": "Ensure that the --audit-log-maxage argument is set to 30 or as appropriate (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-maxage'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and\nset the audit-log-maxage parameter to 30 or as an appropriate number of days, for example,\nkube-apiserver-arg:\n  - \"audit-log-maxage=30\"\n",
+              "test_info": [
+                "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and\nset the audit-log-maxage parameter to 30 or as an appropriate number of days, for example,\nkube-apiserver-arg:\n  - \"audit-log-maxage=30\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-maxage'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.21",
+              "test_desc": "Ensure that the --audit-log-maxbackup argument is set to 10 or as appropriate (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-maxbackup'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and\nset the audit-log-maxbackup parameter to 10 or to an appropriate value. For example,\nkube-apiserver-arg:\n  - \"audit-log-maxbackup=10\"\n",
+              "test_info": [
+                "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and\nset the audit-log-maxbackup parameter to 10 or to an appropriate value. For example,\nkube-apiserver-arg:\n  - \"audit-log-maxbackup=10\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-maxbackup'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.22",
+              "test_desc": "Ensure that the --audit-log-maxsize argument is set to 100 or as appropriate (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-maxsize'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and\nset the audit-log-maxsize parameter to an appropriate size in MB. For example,\nkube-apiserver-arg:\n  - \"audit-log-maxsize=100\"\n",
+              "test_info": [
+                "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and\nset the audit-log-maxsize parameter to an appropriate size in MB. For example,\nkube-apiserver-arg:\n  - \"audit-log-maxsize=100\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-log-maxsize'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.23",
+              "test_desc": "Ensure that the --request-timeout argument is set as appropriate (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'request-timeout'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Permissive, per CIS guidelines,\n\"it is recommended to set this limit as appropriate and change the default limit of 60 seconds only if needed\".\nEdit the K3s config file /etc/rancher/k3s/config.yaml\nand set the below parameter if needed. For example,\nkube-apiserver-arg:\n  - \"request-timeout=300s\"\n",
+              "test_info": [
+                "Permissive, per CIS guidelines,\n\"it is recommended to set this limit as appropriate and change the default limit of 60 seconds only if needed\".\nEdit the K3s config file /etc/rancher/k3s/config.yaml\nand set the below parameter if needed. For example,\nkube-apiserver-arg:\n  - \"request-timeout=300s\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'request-timeout'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.24",
+              "test_desc": "Ensure that the --service-account-lookup argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the --service-account-lookup argument.\nEdit the K3s config file /etc/rancher/k3s/config.yaml and set the service-account-lookup. For example,\nkube-apiserver-arg:\n  - \"service-account-lookup=true\"\nAlternatively, you can delete the service-account-lookup parameter from this file so\nthat the default takes effect.\n",
+              "test_info": [
+                "By default, K3s does not set the --service-account-lookup argument.\nEdit the K3s config file /etc/rancher/k3s/config.yaml and set the service-account-lookup. For example,\nkube-apiserver-arg:\n  - \"service-account-lookup=true\"\nAlternatively, you can delete the service-account-lookup parameter from this file so\nthat the default takes effect.\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--service-account-lookup' is not present OR '--service-account-lookup' is present"
+            },
+            {
+              "test_number": "1.2.25",
+              "test_desc": "Ensure that the --service-account-key-file argument is set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'service-account-key-file'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "K3s automatically generates and sets the service account key file.\nIt is located at /var/lib/rancher/k3s/server/tls/service.key.\nIf this check fails, edit K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"service-account-key-file=<path>\"\n",
+              "test_info": [
+                "K3s automatically generates and sets the service account key file.\nIt is located at /var/lib/rancher/k3s/server/tls/service.key.\nIf this check fails, edit K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"service-account-key-file=<path>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'service-account-key-file'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.26",
+              "test_desc": "Ensure that the --etcd-certfile and --etcd-keyfile arguments are set as appropriate (Automated)",
+              "audit": "if [ \"$(journalctl -m -u k3s | grep -m1 'Managed etcd cluster' | wc -l)\" -gt 0 ]; then\n  journalctl -m -u k3s | grep -m1 'Running kube-apiserver' | tail -n1\nelse\n  echo \"--etcd-certfile AND --etcd-keyfile\"\nfi\n",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "K3s automatically generates and sets the etcd certificate and key files.\nThey are located at /var/lib/rancher/k3s/server/tls/etcd/client.crt and /var/lib/rancher/k3s/server/tls/etcd/client.key.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"etcd-certfile=<path>\"\n  - \"etcd-keyfile=<path>\"\n",
+              "test_info": [
+                "K3s automatically generates and sets the etcd certificate and key files.\nThey are located at /var/lib/rancher/k3s/server/tls/etcd/client.crt and /var/lib/rancher/k3s/server/tls/etcd/client.key.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"etcd-certfile=<path>\"\n  - \"etcd-keyfile=<path>\"\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found\n--etcd-certfile AND --etcd-keyfile",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--etcd-certfile' is present AND '--etcd-keyfile' is present"
+            },
+            {
+              "test_number": "1.2.27",
+              "test_desc": "Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep -A1 'Running kube-apiserver' | tail -n2",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically generates and provides the TLS certificate and private key for the apiserver.\nThey are generated and located at /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.crt and /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.key\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"tls-cert-file=<path>\"\n  - \"tls-private-key-file=<path>\"\n",
+              "test_info": [
+                "By default, K3s automatically generates and provides the TLS certificate and private key for the apiserver.\nThey are generated and located at /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.crt and /var/lib/rancher/k3s/server/tls/serving-kube-apiserver.key\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"tls-cert-file=<path>\"\n  - \"tls-private-key-file=<path>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--tls-cert-file' is present AND '--tls-private-key-file' is present"
+            },
+            {
+              "test_number": "1.2.28",
+              "test_desc": "Ensure that the --client-ca-file argument is set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'client-ca-file'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the client certificate authority file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/client-ca.crt.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"client-ca-file=<path>\"\n",
+              "test_info": [
+                "By default, K3s automatically provides the client certificate authority file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/client-ca.crt.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"client-ca-file=<path>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'client-ca-file'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.29",
+              "test_desc": "Ensure that the --etcd-cafile argument is set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'etcd-cafile'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the etcd certificate authority file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/client-ca.crt.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"etcd-cafile=<path>\"\n",
+              "test_info": [
+                "By default, K3s automatically provides the etcd certificate authority file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/client-ca.crt.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-apiserver-arg:\n  - \"etcd-cafile=<path>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'etcd-cafile'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.30",
+              "test_desc": "Ensure that the --encryption-provider-config argument is set as appropriate (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'encryption-provider-config'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "K3s can be configured to use encryption providers to encrypt secrets at rest.\nEdit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and set the below parameter.\nsecrets-encryption: true\nSecrets encryption can then be managed with the k3s secrets-encrypt command line tool.\nIf needed, you can find the generated encryption config at /var/lib/rancher/k3s/server/cred/encryption-config.json.\n",
+              "test_info": [
+                "K3s can be configured to use encryption providers to encrypt secrets at rest.\nEdit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and set the below parameter.\nsecrets-encryption: true\nSecrets encryption can then be managed with the k3s secrets-encrypt command line tool.\nIf needed, you can find the generated encryption config at /var/lib/rancher/k3s/server/cred/encryption-config.json.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'encryption-provider-config'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.2.31",
+              "test_desc": "Ensure that encryption providers are appropriately configured (Manual)",
+              "audit": "ENCRYPTION_PROVIDER_CONFIG=$(journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep -- --encryption-provider-config | sed 's%.*encryption-provider-config[= ]\\([^ ]*\\).*%\\1%')\nif test -e $ENCRYPTION_PROVIDER_CONFIG; then grep -o 'providers\\\"\\:\\[.*\\]' $ENCRYPTION_PROVIDER_CONFIG | grep -o \"[A-Za-z]*\" | head -2 | tail -1  | sed 's/^/provider=/'; fi\n",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "K3s can be configured to use encryption providers to encrypt secrets at rest. K3s will utilize the aescbc provider.\nEdit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and set the below parameter.\nsecrets-encryption: true\nSecrets encryption can then be managed with the k3s secrets-encrypt command line tool.\nIf needed, you can find the generated encryption config at /var/lib/rancher/k3s/server/cred/encryption-config.json\n",
+              "test_info": [
+                "K3s can be configured to use encryption providers to encrypt secrets at rest. K3s will utilize the aescbc provider.\nEdit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node and set the below parameter.\nsecrets-encryption: true\nSecrets encryption can then be managed with the k3s secrets-encrypt command line tool.\nIf needed, you can find the generated encryption config at /var/lib/rancher/k3s/server/cred/encryption-config.json\n"
+              ],
+              "status": "WARN",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "'provider' is present"
+            },
+            {
+              "test_number": "1.2.32",
+              "test_desc": "Ensure that the API Server only makes use of Strong Cryptographic Ciphers (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'tls-cipher-suites'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, the K3s kube-apiserver complies with this test. Changes to these values may cause regression, therefore ensure that all apiserver clients support the new TLS configuration before applying it in production deployments.\nIf a custom TLS configuration is required, consider also creating a custom version of this rule that aligns with your requirements.\nIf this check fails, remove any custom configuration around `tls-cipher-suites` or update the /etc/rancher/k3s/config.yaml file to match the default by adding the following:\nkube-apiserver-arg:\n  - \"tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305\"\n",
+              "test_info": [
+                "By default, the K3s kube-apiserver complies with this test. Changes to these values may cause regression, therefore ensure that all apiserver clients support the new TLS configuration before applying it in production deployments.\nIf a custom TLS configuration is required, consider also creating a custom version of this rule that aligns with your requirements.\nIf this check fails, remove any custom configuration around `tls-cipher-suites` or update the /etc/rancher/k3s/config.yaml file to match the default by adding the following:\nkube-apiserver-arg:\n  - \"tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'tls-cipher-suites'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            }
+          ]
+        },
+        {
+          "section": "1.3",
+          "type": "",
+          "pass": 1,
+          "fail": 5,
+          "warn": 1,
+          "info": 0,
+          "desc": "Controller Manager",
+          "results": [
+            {
+              "test_number": "1.3.1",
+              "test_desc": "Ensure that the --terminated-pod-gc-threshold argument is set as appropriate (Manual)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'terminated-pod-gc-threshold'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node\nand set the --terminated-pod-gc-threshold to an appropriate threshold,\nkube-controller-manager-arg:\n  - \"terminated-pod-gc-threshold=10\"\n",
+              "test_info": [
+                "Edit the K3s config file /etc/rancher/k3s/config.yaml on the control plane node\nand set the --terminated-pod-gc-threshold to an appropriate threshold,\nkube-controller-manager-arg:\n  - \"terminated-pod-gc-threshold=10\"\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'terminated-pod-gc-threshold'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.3.2",
+              "test_desc": "Ensure that the --profiling argument is set to false (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'profiling'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --profiling argument to false.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"profiling=true\"\n",
+              "test_info": [
+                "By default, K3s sets the --profiling argument to false.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"profiling=true\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'profiling'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.3.3",
+              "test_desc": "Ensure that the --use-service-account-credentials argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'use-service-account-credentials'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --use-service-account-credentials argument to true.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"use-service-account-credentials=false\"\n",
+              "test_info": [
+                "By default, K3s sets the --use-service-account-credentials argument to true.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"use-service-account-credentials=false\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'use-service-account-credentials'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.3.4",
+              "test_desc": "Ensure that the --service-account-private-key-file argument is set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'service-account-private-key-file'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the service account private key file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/service.current.key.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"service-account-private-key-file=<path>\"\n",
+              "test_info": [
+                "By default, K3s automatically provides the service account private key file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/service.current.key.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"service-account-private-key-file=<path>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'service-account-private-key-file'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.3.5",
+              "test_desc": "Ensure that the --root-ca-file argument is set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'root-ca-file'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the root CA file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/server-ca.crt.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"root-ca-file=<path>\"\n",
+              "test_info": [
+                "By default, K3s automatically provides the root CA file.\nIt is generated and located at /var/lib/rancher/k3s/server/tls/server-ca.crt.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"root-ca-file=<path>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'root-ca-file'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "1.3.6",
+              "test_desc": "Ensure that the RotateKubeletServerCertificate argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the RotateKubeletServerCertificate feature gate.\nIf you have enabled this feature gate, you should remove it.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-controller-manager-arg:\n  - \"feature-gate=RotateKubeletServerCertificate\"\n",
+              "test_info": [
+                "By default, K3s does not set the RotateKubeletServerCertificate feature gate.\nIf you have enabled this feature gate, you should remove it.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml, remove any lines like below.\nkube-controller-manager-arg:\n  - \"feature-gate=RotateKubeletServerCertificate\"\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--feature-gates' is present OR '--feature-gates' is not present"
+            },
+            {
+              "test_number": "1.3.7",
+              "test_desc": "Ensure that the --bind-address argument is set to 127.0.0.1 (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'bind-address'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --bind-address argument to 127.0.0.1\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"bind-address=<IP>\"\n",
+              "test_info": [
+                "By default, K3s sets the --bind-address argument to 127.0.0.1\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-controller-manager-arg:\n  - \"bind-address=<IP>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-controller-manager' | tail -n1 | grep 'bind-address'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            }
+          ]
+        },
+        {
+          "section": "1.4",
+          "type": "",
+          "pass": 0,
+          "fail": 2,
+          "warn": 0,
+          "info": 0,
+          "desc": "Scheduler",
+          "results": [
+            {
+              "test_number": "1.4.1",
+              "test_desc": "Ensure that the --profiling argument is set to false (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-scheduler' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --profiling argument to false.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-scheduler-arg:\n  - \"profiling=true\"\n",
+              "test_info": [
+                "By default, K3s sets the --profiling argument to false.\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-scheduler-arg:\n  - \"profiling=true\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--profiling' is present"
+            },
+            {
+              "test_number": "1.4.2",
+              "test_desc": "Ensure that the --bind-address argument is set to 127.0.0.1 (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-scheduler' | tail -n1 | grep 'bind-address'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --bind-address argument to 127.0.0.1\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-scheduler-arg:\n  - \"bind-address=<IP>\"\n",
+              "test_info": [
+                "By default, K3s sets the --bind-address argument to 127.0.0.1\nIf this check fails, edit the K3s config file /etc/rancher/k3s/config.yaml and remove any lines like below.\nkube-scheduler-arg:\n  - \"bind-address=<IP>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-scheduler' | tail -n1 | grep 'bind-address'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            }
+          ]
+        }
+      ],
+      "total_pass": 14,
+      "total_fail": 23,
+      "total_warn": 12,
+      "total_info": 13
+    },
+    {
+      "id": "2",
+      "version": "k3s-cis-1.24",
+      "detected_version": "none",
+      "text": "Etcd Node Configuration",
+      "node_type": "etcd",
+      "tests": [
+        {
+          "section": "2",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 7,
+          "info": 0,
+          "desc": "Etcd Node Configuration",
+          "results": [
+            {
+              "test_number": "2.1",
+              "test_desc": "Ensure that the --cert-file and --key-file arguments are set as appropriate (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s generates cert and key files for etcd.\nThese are located in /var/lib/rancher/k3s/server/tls/etcd/.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to use custom cert and key files.\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s generates cert and key files for etcd.\nThese are located in /var/lib/rancher/k3s/server/tls/etcd/.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to use custom cert and key files.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "2.2",
+              "test_desc": "Ensure that the --client-cert-auth argument is set to true (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s sets the --client-cert-auth parameter to true.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to disable client certificate authentication.\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s sets the --client-cert-auth parameter to true.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to disable client certificate authentication.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "2.3",
+              "test_desc": "Ensure that the --auto-tls argument is not set to true (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s does not set the --auto-tls parameter.\nIf this check fails, edit the etcd pod specification file /etc/kubernetes/manifests/etcd.yaml on the master\nnode and either remove the --auto-tls parameter or set it to false.\nclient-transport-security:\n  auto-tls: false\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s does not set the --auto-tls parameter.\nIf this check fails, edit the etcd pod specification file /etc/kubernetes/manifests/etcd.yaml on the master\nnode and either remove the --auto-tls parameter or set it to false.\nclient-transport-security:\n  auto-tls: false\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "2.4",
+              "test_desc": "Ensure that the --peer-cert-file and --peer-key-file arguments are set as appropriate (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s generates peer cert and key files for etcd.\nThese are located in /var/lib/rancher/k3s/server/tls/etcd/.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to use custom peer cert and key files.\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s generates peer cert and key files for etcd.\nThese are located in /var/lib/rancher/k3s/server/tls/etcd/.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to use custom peer cert and key files.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "2.5",
+              "test_desc": "Ensure that the --peer-client-cert-auth argument is set to true (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s sets the --peer-cert-auth parameter to true.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to disable peer client certificate authentication.\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s sets the --peer-cert-auth parameter to true.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to disable peer client certificate authentication.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "2.6",
+              "test_desc": "Ensure that the --peer-auto-tls argument is not set to true (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s does not set the --peer-auto-tls parameter.\nIf this check fails, edit the etcd pod specification file /etc/kubernetes/manifests/etcd.yaml on the master\nnode and either remove the --peer-auto-tls parameter or set it to false.\npeer-transport-security:\n  auto-tls: false\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s does not set the --peer-auto-tls parameter.\nIf this check fails, edit the etcd pod specification file /etc/kubernetes/manifests/etcd.yaml on the master\nnode and either remove the --peer-auto-tls parameter or set it to false.\npeer-transport-security:\n  auto-tls: false\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "2.7",
+              "test_desc": "Ensure that a unique Certificate Authority is used for etcd (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "cat /etc/kubernetes/manifests/etcd.yaml",
+              "type": "",
+              "remediation": "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s generates a unique certificate authority for etcd.\nThis is located at /var/lib/rancher/k3s/server/tls/etcd/peer-ca.crt.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to use a shared certificate authority.\n",
+              "test_info": [
+                "If running on with sqlite or a external DB, etcd checks are Not Applicable.\nWhen running with embedded-etcd, K3s generates a unique certificate authority for etcd.\nThis is located at /var/lib/rancher/k3s/server/tls/etcd/peer-ca.crt.\nIf this check fails, ensure that the configuration file /etc/kubernetes/manifests/etcd.yaml\nhas not been modified to use a shared certificate authority.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"cat /etc/kubernetes/manifests/etcd.yaml\", output: \"cat: can't open '/etc/kubernetes/manifests/etcd.yaml': No such file or directory\\n\", error: exit status 1"
+            }
+          ]
+        }
+      ],
+      "total_pass": 0,
+      "total_fail": 0,
+      "total_warn": 7,
+      "total_info": 0
+    },
+    {
+      "id": "3",
+      "version": "k3s-cis-1.24",
+      "detected_version": "none",
+      "text": "Control Plane Configuration",
+      "node_type": "controlplane",
+      "tests": [
+        {
+          "section": "3.1",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 1,
+          "info": 0,
+          "desc": "Authentication and Authorization",
+          "results": [
+            {
+              "test_number": "3.1.1",
+              "test_desc": "Client certificate authentication should not be used for users (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Alternative mechanisms provided by Kubernetes such as the use of OIDC should be\nimplemented in place of client certificates.\n",
+              "test_info": [
+                "Alternative mechanisms provided by Kubernetes such as the use of OIDC should be\nimplemented in place of client certificates.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        },
+        {
+          "section": "3.2",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 2,
+          "info": 0,
+          "desc": "Logging",
+          "results": [
+            {
+              "test_number": "3.2.1",
+              "test_desc": "Ensure that a minimal audit policy is created (Automated)",
+              "audit": "journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-policy-file'",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Create an audit policy file for your cluster.\n",
+              "test_info": [
+                "Create an audit policy file for your cluster.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "failed to run: \"journalctl -m -u k3s | grep 'Running kube-apiserver' | tail -n1 | grep 'audit-policy-file'\", output: \"/bin/sh: journalctl: not found\\n\", error: exit status 1"
+            },
+            {
+              "test_number": "3.2.2",
+              "test_desc": "Ensure that the audit policy covers key security concerns (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Review the audit policy provided for the cluster and ensure that it covers\nat least the following areas,\n- Access to Secrets managed by the cluster. Care should be taken to only\n  log Metadata for requests to Secrets, ConfigMaps, and TokenReviews, in\n  order to avoid risk of logging sensitive data.\n- Modification of Pod and Deployment objects.\n- Use of `pods/exec`, `pods/portforward`, `pods/proxy` and `services/proxy`.\nFor most requests, minimally logging at the Metadata level is recommended\n(the most basic level of logging).\n",
+              "test_info": [
+                "Review the audit policy provided for the cluster and ensure that it covers\nat least the following areas,\n- Access to Secrets managed by the cluster. Care should be taken to only\n  log Metadata for requests to Secrets, ConfigMaps, and TokenReviews, in\n  order to avoid risk of logging sensitive data.\n- Modification of Pod and Deployment objects.\n- Use of `pods/exec`, `pods/portforward`, `pods/proxy` and `services/proxy`.\nFor most requests, minimally logging at the Metadata level is recommended\n(the most basic level of logging).\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        }
+      ],
+      "total_pass": 0,
+      "total_fail": 0,
+      "total_warn": 3,
+      "total_info": 0
+    },
+    {
+      "id": "4",
+      "version": "k3s-cis-1.24",
+      "detected_version": "none",
+      "text": "Worker Node Security Configuration",
+      "node_type": "node",
+      "tests": [
+        {
+          "section": "4.1",
+          "type": "",
+          "pass": 6,
+          "fail": 0,
+          "warn": 0,
+          "info": 4,
+          "desc": "Worker Node Configuration Files",
+          "results": [
+            {
+              "test_number": "4.1.1",
+              "test_desc": "Ensure that the kubelet service file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/systemd/system/kubelet.service.d/10-kubeadm.conf; then stat -c permissions=%a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet service file, all configuration is passed in as arguments at runtime.\n",
+              "test_info": [
+                "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet service file, all configuration is passed in as arguments at runtime.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "4.1.2",
+              "test_desc": "Ensure that the kubelet service file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /etc/systemd/system/kubelet.service.d/10-kubeadm.conf; then stat -c %U:%G /etc/systemd/system/kubelet.service.d/10-kubeadm.conf; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet service file, all configuration is passed in as arguments at runtime.\n",
+              "test_info": [
+                "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet service file, all configuration is passed in as arguments at runtime.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "4.1.3",
+              "test_desc": "If proxy kubeconfig file exists ensure permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig; then stat -c permissions=%a /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "permissions=600",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "permissions has permissions 600, expected 600 or more restrictive"
+            },
+            {
+              "test_number": "4.1.4",
+              "test_desc": "If proxy kubeconfig file exists ensure ownership is set to root:root (Automated)",
+              "audit": "stat -c %U:%G /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the each worker node.\nFor example, chown root:root /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the each worker node.\nFor example, chown root:root /var/lib/rancher/k3s/agent/kubeproxy.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'root:root' is present"
+            },
+            {
+              "test_number": "4.1.5",
+              "test_desc": "Ensure that the --kubeconfig kubelet.conf file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/rancher/k3s/agent/kubelet.kubeconfig; then stat -c permissions=%a /var/lib/rancher/k3s/agent/kubelet.kubeconfig; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/agent/kubelet.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\nchmod 600 /var/lib/rancher/k3s/agent/kubelet.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "permissions=600",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "permissions has permissions 600, expected 600 or more restrictive"
+            },
+            {
+              "test_number": "4.1.6",
+              "test_desc": "Ensure that the --kubeconfig kubelet.conf file ownership is set to root:root (Automated)",
+              "audit": "stat -c %U:%G /var/lib/rancher/k3s/agent/kubelet.kubeconfig",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\nchown root:root /var/lib/rancher/k3s/agent/kubelet.kubeconfig\n",
+              "test_info": [
+                "Run the below command (based on the file location on your system) on the each worker node.\nFor example,\nchown root:root /var/lib/rancher/k3s/agent/kubelet.kubeconfig\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'root:root' is equal to 'root:root'"
+            },
+            {
+              "test_number": "4.1.7",
+              "test_desc": "Ensure that the certificate authorities file permissions are set to 600 or more restrictive (Automated)",
+              "audit": "stat -c permissions=%a /var/lib/rancher/k3s/agent/client-ca.crt",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the following command to modify the file permissions of the\n--client-ca-file chmod 600 /var/lib/rancher/k3s/agent/client-ca.crt\n",
+              "test_info": [
+                "Run the following command to modify the file permissions of the\n--client-ca-file chmod 600 /var/lib/rancher/k3s/agent/client-ca.crt\n"
+              ],
+              "status": "PASS",
+              "actual_value": "permissions=600",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "permissions has permissions 600, expected 600 or more restrictive"
+            },
+            {
+              "test_number": "4.1.8",
+              "test_desc": "Ensure that the client certificate authorities file ownership is set to root:root (Automated)",
+              "audit": "stat -c %U:%G /var/lib/rancher/k3s/agent/client-ca.crt",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "Run the following command to modify the ownership of the --client-ca-file.\nchown root:root /var/lib/rancher/k3s/agent/client-ca.crt\n",
+              "test_info": [
+                "Run the following command to modify the ownership of the --client-ca-file.\nchown root:root /var/lib/rancher/k3s/agent/client-ca.crt\n"
+              ],
+              "status": "PASS",
+              "actual_value": "root:root",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'root:root' is equal to 'root:root'"
+            },
+            {
+              "test_number": "4.1.9",
+              "test_desc": "If the kubelet config.yaml configuration file is being used validate permissions set to 600 or more restrictive (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/kubelet/config.yaml; then stat -c permissions=%a /var/lib/kubelet/config.yaml; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet config file, all configuration is passed in as arguments at runtime.\n",
+              "test_info": [
+                "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet config file, all configuration is passed in as arguments at runtime.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "4.1.10",
+              "test_desc": "If the kubelet config.yaml configuration file is being used validate file ownership is set to root:root (Automated)",
+              "audit": "/bin/sh -c 'if test -e /var/lib/kubelet/config.yaml; then stat -c %U:%G /var/lib/kubelet/config.yaml; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet config file, all configuration is passed in as arguments at runtime.\n",
+              "test_info": [
+                "Not Applicable.\nThe kubelet is embedded in the k3s process. There is no kubelet config file, all configuration is passed in as arguments at runtime.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            }
+          ]
+        },
+        {
+          "section": "4.2",
+          "type": "",
+          "pass": 8,
+          "fail": 2,
+          "warn": 2,
+          "info": 1,
+          "desc": "Kubelet",
+          "results": [
+            {
+              "test_number": "4.2.1",
+              "test_desc": "Ensure that the --anonymous-auth argument is set to false (Automated)",
+              "audit": "/bin/sh -c 'if test $(journalctl -m -u k3s -u k3s-agent | grep \"Running kubelet\" | wc -l) -gt 0; then journalctl -m -u k3s -u k3s-agent | grep \"Running kubelet\" | tail -n1 | grep \"anonymous-auth\" | grep -v grep; else echo \"--anonymous-auth=false\"; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --anonymous-auth to false. If you have set this to a different value, you\nshould set it back to false. If using the K3s config file /etc/rancher/k3s/config.yaml, remove any lines similar to below.\nkubelet-arg:\n  - \"anonymous-auth=true\"\nIf using the command line, edit the K3s service file and remove the below argument.\n--kubelet-arg=\"anonymous-auth=true\"\nBased on your system, restart the k3s service. For example,\nsystemctl daemon-reload\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "By default, K3s sets the --anonymous-auth to false. If you have set this to a different value, you\nshould set it back to false. If using the K3s config file /etc/rancher/k3s/config.yaml, remove any lines similar to below.\nkubelet-arg:\n  - \"anonymous-auth=true\"\nIf using the command line, edit the K3s service file and remove the below argument.\n--kubelet-arg=\"anonymous-auth=true\"\nBased on your system, restart the k3s service. For example,\nsystemctl daemon-reload\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found\n--anonymous-auth=false",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--anonymous-auth' is equal to 'false'"
+            },
+            {
+              "test_number": "4.2.2",
+              "test_desc": "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)",
+              "audit": "/bin/sh -c 'if test $(journalctl -m -u k3s -u k3s-agent | grep \"Running kubelet\" | wc -l) -gt 0; then journalctl -m -u k3s -u k3s-agent | grep \"Running kubelet\" | tail -n1 | grep \"authorization-mode\"; else echo \"--authorization-mode=Webhook\"; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the --authorization-mode to AlwaysAllow.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, remove any lines similar to below.\nkubelet-arg:\n  - \"authorization-mode=AlwaysAllow\"\nIf using the command line, edit the K3s service file and remove the below argument.\n--kubelet-arg=\"authorization-mode=AlwaysAllow\"\nBased on your system, restart the k3s service. For example,\nsystemctl daemon-reload\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "By default, K3s does not set the --authorization-mode to AlwaysAllow.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, remove any lines similar to below.\nkubelet-arg:\n  - \"authorization-mode=AlwaysAllow\"\nIf using the command line, edit the K3s service file and remove the below argument.\n--kubelet-arg=\"authorization-mode=AlwaysAllow\"\nBased on your system, restart the k3s service. For example,\nsystemctl daemon-reload\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found\n--authorization-mode=Webhook",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--authorization-mode' does not have 'AlwaysAllow'"
+            },
+            {
+              "test_number": "4.2.3",
+              "test_desc": "Ensure that the --client-ca-file argument is set as appropriate (Automated)",
+              "audit": "/bin/sh -c 'if test $(journalctl -m -u k3s -u k3s-agent | grep \"Running kubelet\" | wc -l) -gt 0; then journalctl -m -u k3s -u k3s-agent | grep \"Running kubelet\" | tail -n1 | grep \"client-ca-file\"; else echo \"--client-ca-file=/var/lib/rancher/k3s/server/tls/request-header-ca.crt\"; fi' ",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the client ca certificate for the Kubelet.\nIt is generated and located at /var/lib/rancher/k3s/agent/client-ca.crt\n",
+              "test_info": [
+                "By default, K3s automatically provides the client ca certificate for the Kubelet.\nIt is generated and located at /var/lib/rancher/k3s/agent/client-ca.crt\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found\n--client-ca-file=/var/lib/rancher/k3s/server/tls/request-header-ca.crt",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--client-ca-file' is present"
+            },
+            {
+              "test_number": "4.2.4",
+              "test_desc": "Verify that the --read-only-port argument is set to 0 (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s sets the --read-only-port to 0. If you have set this to a different value, you\nshould set it back to 0. If using the K3s config file /etc/rancher/k3s/config.yaml, remove any lines similar to below.\nkubelet-arg:\n  - \"read-only-port=XXXX\"\nIf using the command line, edit the K3s service file and remove the below argument.\n--kubelet-arg=\"read-only-port=XXXX\"\nBased on your system, restart the k3s service. For example,\nsystemctl daemon-reload\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "By default, K3s sets the --read-only-port to 0. If you have set this to a different value, you\nshould set it back to 0. If using the K3s config file /etc/rancher/k3s/config.yaml, remove any lines similar to below.\nkubelet-arg:\n  - \"read-only-port=XXXX\"\nIf using the command line, edit the K3s service file and remove the below argument.\n--kubelet-arg=\"read-only-port=XXXX\"\nBased on your system, restart the k3s service. For example,\nsystemctl daemon-reload\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--read-only-port' is present OR '--read-only-port' is not present"
+            },
+            {
+              "test_number": "4.2.5",
+              "test_desc": "Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Manual)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "If using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter to an appropriate value.\nkubelet-arg:\n  - \"streaming-connection-idle-timeout=5m\"\nIf using the command line, run K3s with --kubelet-arg=\"streaming-connection-idle-timeout=5m\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "If using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter to an appropriate value.\nkubelet-arg:\n  - \"streaming-connection-idle-timeout=5m\"\nIf using the command line, run K3s with --kubelet-arg=\"streaming-connection-idle-timeout=5m\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "'--streaming-connection-idle-timeout' is present OR '--streaming-connection-idle-timeout' is not present"
+            },
+            {
+              "test_number": "4.2.6",
+              "test_desc": "Ensure that the --protect-kernel-defaults argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "If using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter.\nprotect-kernel-defaults: true\nIf using the command line, run K3s with --protect-kernel-defaults=true.\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "If using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter.\nprotect-kernel-defaults: true\nIf using the command line, run K3s with --protect-kernel-defaults=true.\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--protect-kernel-defaults' is present"
+            },
+            {
+              "test_number": "4.2.7",
+              "test_desc": "Ensure that the --make-iptables-util-chains argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "If using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter.\nkubelet-arg:\n  - \"make-iptables-util-chains=true\"\nIf using the command line, run K3s with --kubelet-arg=\"make-iptables-util-chains=true\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "If using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter.\nkubelet-arg:\n  - \"make-iptables-util-chains=true\"\nIf using the command line, run K3s with --kubelet-arg=\"make-iptables-util-chains=true\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--make-iptables-util-chains' is present OR '--make-iptables-util-chains' is not present"
+            },
+            {
+              "test_number": "4.2.8",
+              "test_desc": "Ensure that the --hostname-override argument is not set (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "skip",
+              "remediation": "Not Applicable.\nBy default, K3s does set the --hostname-override argument. Per CIS guidelines, this is to comply\nwith cloud providers that require this flag to ensure that hostname matches node names.\n",
+              "test_info": [
+                "Not Applicable.\nBy default, K3s does set the --hostname-override argument. Per CIS guidelines, this is to comply\nwith cloud providers that require this flag to ensure that hostname matches node names.\n"
+              ],
+              "status": "INFO",
+              "actual_value": "",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as skip"
+            },
+            {
+              "test_number": "4.2.9",
+              "test_desc": "Ensure that the eventRecordQPS argument is set to a level which ensures appropriate event capture (Manual)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "/bin/cat /var/lib/kubelet/config.yaml",
+              "type": "",
+              "remediation": "By default, K3s sets the event-qps to 0. Should you wish to change this,\nIf using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter to an appropriate value.\nkubelet-arg:\n  - \"event-qps=<value>\"\nIf using the command line, run K3s with --kubelet-arg=\"event-qps=<value>\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "By default, K3s sets the event-qps to 0. Should you wish to change this,\nIf using the K3s config file /etc/rancher/k3s/config.yaml, set the following parameter to an appropriate value.\nkubelet-arg:\n  - \"event-qps=<value>\"\nIf using the command line, run K3s with --kubelet-arg=\"event-qps=<value>\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "WARN",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "'--event-qps' is present"
+            },
+            {
+              "test_number": "4.2.10",
+              "test_desc": "Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s automatically provides the TLS certificate and private key for the Kubelet.\nThey are generated and located at /var/lib/rancher/k3s/agent/serving-kubelet.crt and /var/lib/rancher/k3s/agent/serving-kubelet.key\nIf for some reason you need to provide your own certificate and key, you can set the\nbelow parameters in the K3s config file /etc/rancher/k3s/config.yaml.\nkubelet-arg:\n  - \"tls-cert-file=<path/to/tls-cert-file>\"\n  - \"tls-private-key-file=<path/to/tls-private-key-file>\"\n",
+              "test_info": [
+                "By default, K3s automatically provides the TLS certificate and private key for the Kubelet.\nThey are generated and located at /var/lib/rancher/k3s/agent/serving-kubelet.crt and /var/lib/rancher/k3s/agent/serving-kubelet.key\nIf for some reason you need to provide your own certificate and key, you can set the\nbelow parameters in the K3s config file /etc/rancher/k3s/config.yaml.\nkubelet-arg:\n  - \"tls-cert-file=<path/to/tls-cert-file>\"\n  - \"tls-private-key-file=<path/to/tls-private-key-file>\"\n"
+              ],
+              "status": "FAIL",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--tls-cert-file' is present AND '--tls-private-key-file' is present"
+            },
+            {
+              "test_number": "4.2.11",
+              "test_desc": "Ensure that the --rotate-certificates argument is not set to false (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "/bin/sh -c 'if test -e /var/lib/kubelet/config.yaml; then /bin/cat /var/lib/kubelet/config.yaml; fi' ",
+              "type": "",
+              "remediation": "By default, K3s does not set the --rotate-certificates argument. If you have set this flag with a value of `false`, you should either set it to `true` or completely remove the flag.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, remove any rotate-certificates parameter.\nIf using the command line, remove the K3s flag --kubelet-arg=\"rotate-certificates\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "By default, K3s does not set the --rotate-certificates argument. If you have set this flag with a value of `false`, you should either set it to `true` or completely remove the flag.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, remove any rotate-certificates parameter.\nIf using the command line, remove the K3s flag --kubelet-arg=\"rotate-certificates\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'--rotate-certificates' is present OR '--rotate-certificates' is not present"
+            },
+            {
+              "test_number": "4.2.12",
+              "test_desc": "Verify that the RotateKubeletServerCertificate argument is set to true (Automated)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "",
+              "remediation": "By default, K3s does not set the RotateKubeletServerCertificate feature gate.\nIf you have enabled this feature gate, you should remove it.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, remove any feature-gate=RotateKubeletServerCertificate parameter.\nIf using the command line, remove the K3s flag --kubelet-arg=\"feature-gate=RotateKubeletServerCertificate\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "By default, K3s does not set the RotateKubeletServerCertificate feature gate.\nIf you have enabled this feature gate, you should remove it.\nIf using the K3s config file /etc/rancher/k3s/config.yaml, remove any feature-gate=RotateKubeletServerCertificate parameter.\nIf using the command line, remove the K3s flag --kubelet-arg=\"feature-gate=RotateKubeletServerCertificate\".\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "PASS",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": true,
+              "IsMultiple": false,
+              "expected_result": "'RotateKubeletServerCertificate' is present OR 'RotateKubeletServerCertificate' is not present"
+            },
+            {
+              "test_number": "4.2.13",
+              "test_desc": "Ensure that the Kubelet only makes use of Strong Cryptographic Ciphers (Manual)",
+              "audit": "journalctl -m -u k3s -u k3s-agent | grep 'Running kubelet' | tail -n1",
+              "AuditEnv": "",
+              "AuditConfig": "/bin/cat /var/lib/kubelet/config.yaml",
+              "type": "",
+              "remediation": "If using a K3s config file /etc/rancher/k3s/config.yaml, edit the file to set `tlsCipherSuites` to\nkubelet-arg:\n  - \"tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305\"\nor to a subset of these values.\nIf using the command line, add the K3s flag --kubelet-arg=\"tls-cipher-suites=<same values as above>\"\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n",
+              "test_info": [
+                "If using a K3s config file /etc/rancher/k3s/config.yaml, edit the file to set `tlsCipherSuites` to\nkubelet-arg:\n  - \"tls-cipher-suites=TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305\"\nor to a subset of these values.\nIf using the command line, add the K3s flag --kubelet-arg=\"tls-cipher-suites=<same values as above>\"\nBased on your system, restart the k3s service. For example,\nsystemctl restart k3s.service\n"
+              ],
+              "status": "WARN",
+              "actual_value": "/bin/sh: journalctl: not found",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "'--tls-cipher-suites' is present"
+            }
+          ]
+        }
+      ],
+      "total_pass": 14,
+      "total_fail": 2,
+      "total_warn": 2,
+      "total_info": 5
+    },
+    {
+      "id": "5",
+      "version": "k3s-cis-1.24",
+      "detected_version": "none",
+      "text": "Kubernetes Policies",
+      "node_type": "policies",
+      "tests": [
+        {
+          "section": "5.1",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 8,
+          "info": 0,
+          "desc": "RBAC and Service Accounts",
+          "results": [
+            {
+              "test_number": "5.1.1",
+              "test_desc": "Ensure that the cluster-admin role is only used where required (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Identify all clusterrolebindings to the cluster-admin role. Check if they are used and\nif they need this role or if they could use a role with fewer privileges.\nWhere possible, first bind users to a lower privileged role and then remove the\nclusterrolebinding to the cluster-admin role :\nkubectl delete clusterrolebinding [name]\n",
+              "test_info": [
+                "Identify all clusterrolebindings to the cluster-admin role. Check if they are used and\nif they need this role or if they could use a role with fewer privileges.\nWhere possible, first bind users to a lower privileged role and then remove the\nclusterrolebinding to the cluster-admin role :\nkubectl delete clusterrolebinding [name]\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.2",
+              "test_desc": "Minimize access to secrets (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Where possible, remove get, list and watch access to Secret objects in the cluster.\n",
+              "test_info": [
+                "Where possible, remove get, list and watch access to Secret objects in the cluster.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.3",
+              "test_desc": "Minimize wildcard use in Roles and ClusterRoles (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Where possible replace any use of wildcards in clusterroles and roles with specific\nobjects or actions.\n",
+              "test_info": [
+                "Where possible replace any use of wildcards in clusterroles and roles with specific\nobjects or actions.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.4",
+              "test_desc": "Minimize access to create pods (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Where possible, remove create access to pod objects in the cluster.\n",
+              "test_info": [
+                "Where possible, remove create access to pod objects in the cluster.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.5",
+              "test_desc": "Ensure that default service accounts are not actively used. (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Create explicit service accounts wherever a Kubernetes workload requires specific access\nto the Kubernetes API server.\nModify the configuration of each default service account to include this value\nautomountServiceAccountToken: false\n",
+              "test_info": [
+                "Create explicit service accounts wherever a Kubernetes workload requires specific access\nto the Kubernetes API server.\nModify the configuration of each default service account to include this value\nautomountServiceAccountToken: false\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.6",
+              "test_desc": "Ensure that Service Account Tokens are only mounted where necessary (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Modify the definition of pods and service accounts which do not need to mount service\naccount tokens to disable it.\n",
+              "test_info": [
+                "Modify the definition of pods and service accounts which do not need to mount service\naccount tokens to disable it.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.7",
+              "test_desc": "Avoid use of system:masters group (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Remove the system:masters group from all users in the cluster.\n",
+              "test_info": [
+                "Remove the system:masters group from all users in the cluster.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.1.8",
+              "test_desc": "Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Where possible, remove the impersonate, bind and escalate rights from subjects.\n",
+              "test_info": [
+                "Where possible, remove the impersonate, bind and escalate rights from subjects.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        },
+        {
+          "section": "5.2",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 13,
+          "info": 0,
+          "desc": "Pod Security Standards",
+          "results": [
+            {
+              "test_number": "5.2.1",
+              "test_desc": "Ensure that the cluster has at least one active policy control mechanism in place (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Ensure that either Pod Security Admission or an external policy control system is in place\nfor every namespace which contains user workloads.\n",
+              "test_info": [
+                "Ensure that either Pod Security Admission or an external policy control system is in place\nfor every namespace which contains user workloads.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.2",
+              "test_desc": "Minimize the admission of privileged containers (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of privileged containers.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of privileged containers.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.3",
+              "test_desc": "Minimize the admission of containers wishing to share the host process ID namespace (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of `hostPID` containers.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of `hostPID` containers.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.4",
+              "test_desc": "Minimize the admission of containers wishing to share the host IPC namespace (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of `hostIPC` containers.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of `hostIPC` containers.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.5",
+              "test_desc": "Minimize the admission of containers wishing to share the host network namespace (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of `hostNetwork` containers.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of `hostNetwork` containers.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.6",
+              "test_desc": "Minimize the admission of containers with allowPrivilegeEscalation (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers with `.spec.allowPrivilegeEscalation` set to `true`.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers with `.spec.allowPrivilegeEscalation` set to `true`.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.7",
+              "test_desc": "Minimize the admission of root containers (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Create a policy for each namespace in the cluster, ensuring that either `MustRunAsNonRoot`\nor `MustRunAs` with the range of UIDs not including 0, is set.\n",
+              "test_info": [
+                "Create a policy for each namespace in the cluster, ensuring that either `MustRunAsNonRoot`\nor `MustRunAs` with the range of UIDs not including 0, is set.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.8",
+              "test_desc": "Minimize the admission of containers with the NET_RAW capability (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers with the `NET_RAW` capability.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers with the `NET_RAW` capability.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.9",
+              "test_desc": "Minimize the admission of containers with added capabilities (Automated)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Ensure that `allowedCapabilities` is not present in policies for the cluster unless\nit is set to an empty array.\n",
+              "test_info": [
+                "Ensure that `allowedCapabilities` is not present in policies for the cluster unless\nit is set to an empty array.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.10",
+              "test_desc": "Minimize the admission of containers with capabilities assigned (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Review the use of capabilities in applications running on your cluster. Where a namespace\ncontains applications which do not require any Linux capabities to operate consider adding\na PSP which forbids the admission of containers which do not drop all capabilities.\n",
+              "test_info": [
+                "Review the use of capabilities in applications running on your cluster. Where a namespace\ncontains applications which do not require any Linux capabities to operate consider adding\na PSP which forbids the admission of containers which do not drop all capabilities.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.11",
+              "test_desc": "Minimize the admission of Windows HostProcess containers (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers that have `.securityContext.windowsOptions.hostProcess` set to `true`.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers that have `.securityContext.windowsOptions.hostProcess` set to `true`.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.12",
+              "test_desc": "Minimize the admission of HostPath volumes (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers with `hostPath` volumes.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers with `hostPath` volumes.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.2.13",
+              "test_desc": "Minimize the admission of containers which use HostPorts (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers which use `hostPort` sections.\n",
+              "test_info": [
+                "Add policies to each namespace in the cluster which has user workloads to restrict the\nadmission of containers which use `hostPort` sections.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        },
+        {
+          "section": "5.3",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 2,
+          "info": 0,
+          "desc": "Network Policies and CNI",
+          "results": [
+            {
+              "test_number": "5.3.1",
+              "test_desc": "Ensure that the CNI in use supports NetworkPolicies (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "If the CNI plugin in use does not support network policies, consideration should be given to\nmaking use of a different plugin, or finding an alternate mechanism for restricting traffic\nin the Kubernetes cluster.\n",
+              "test_info": [
+                "If the CNI plugin in use does not support network policies, consideration should be given to\nmaking use of a different plugin, or finding an alternate mechanism for restricting traffic\nin the Kubernetes cluster.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.3.2",
+              "test_desc": "Ensure that all Namespaces have NetworkPolicies defined (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Follow the documentation and create NetworkPolicy objects as you need them.\n",
+              "test_info": [
+                "Follow the documentation and create NetworkPolicy objects as you need them.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        },
+        {
+          "section": "5.4",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 2,
+          "info": 0,
+          "desc": "Secrets Management",
+          "results": [
+            {
+              "test_number": "5.4.1",
+              "test_desc": "Prefer using Secrets as files over Secrets as environment variables (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "If possible, rewrite application code to read Secrets from mounted secret files, rather than\nfrom environment variables.\n",
+              "test_info": [
+                "If possible, rewrite application code to read Secrets from mounted secret files, rather than\nfrom environment variables.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.4.2",
+              "test_desc": "Consider external secret storage (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Refer to the Secrets management options offered by your cloud provider or a third-party\nsecrets management solution.\n",
+              "test_info": [
+                "Refer to the Secrets management options offered by your cloud provider or a third-party\nsecrets management solution.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        },
+        {
+          "section": "5.5",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 1,
+          "info": 0,
+          "desc": "Extensible Admission Control",
+          "results": [
+            {
+              "test_number": "5.5.1",
+              "test_desc": "Configure Image Provenance using ImagePolicyWebhook admission controller (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Follow the Kubernetes documentation and setup image provenance.\n",
+              "test_info": [
+                "Follow the Kubernetes documentation and setup image provenance.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        },
+        {
+          "section": "5.7",
+          "type": "",
+          "pass": 0,
+          "fail": 0,
+          "warn": 4,
+          "info": 0,
+          "desc": "General Policies",
+          "results": [
+            {
+              "test_number": "5.7.1",
+              "test_desc": "Create administrative boundaries between resources using namespaces (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Follow the documentation and create namespaces for objects in your deployment as you need\nthem.\n",
+              "test_info": [
+                "Follow the documentation and create namespaces for objects in your deployment as you need\nthem.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.7.2",
+              "test_desc": "Ensure that the seccomp profile is set to docker/default in your Pod definitions (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Use `securityContext` to enable the docker/default seccomp profile in your pod definitions.\nAn example is as below:\n  securityContext:\n    seccompProfile:\n      type: RuntimeDefault\n",
+              "test_info": [
+                "Use `securityContext` to enable the docker/default seccomp profile in your pod definitions.\nAn example is as below:\n  securityContext:\n    seccompProfile:\n      type: RuntimeDefault\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.7.3",
+              "test_desc": "Apply SecurityContext to your Pods and Containers (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Follow the Kubernetes documentation and apply SecurityContexts to your Pods. For a\nsuggested list of SecurityContexts, you may refer to the CIS Security Benchmark for Docker\nContainers.\n",
+              "test_info": [
+                "Follow the Kubernetes documentation and apply SecurityContexts to your Pods. For a\nsuggested list of SecurityContexts, you may refer to the CIS Security Benchmark for Docker\nContainers.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            },
+            {
+              "test_number": "5.7.4",
+              "test_desc": "The default namespace should not be used (Manual)",
+              "audit": "",
+              "AuditEnv": "",
+              "AuditConfig": "",
+              "type": "manual",
+              "remediation": "Ensure that namespaces are created to allow for appropriate segregation of Kubernetes\nresources and that all new resources are created in a specific namespace.\n",
+              "test_info": [
+                "Ensure that namespaces are created to allow for appropriate segregation of Kubernetes\nresources and that all new resources are created in a specific namespace.\n"
+              ],
+              "status": "WARN",
+              "actual_value": "",
+              "scored": false,
+              "IsMultiple": false,
+              "expected_result": "",
+              "reason": "Test marked as a manual test"
+            }
+          ]
+        }
+      ],
+      "total_pass": 0,
+      "total_fail": 0,
+      "total_warn": 30,
+      "total_info": 0
+    }
+  ],
+  "Totals": {
+    "total_pass": 28,
+    "total_fail": 25,
+    "total_warn": 54,
+    "total_info": 18
+  }
+}
