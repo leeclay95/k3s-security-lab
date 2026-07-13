@@ -1,19 +1,36 @@
 # Kubernetes API-server audit policy for the lab. Focused + low-volume: it logs
-# the security-relevant events and drops routine read noise, so the lab log
-# shipper can forward it to floci CloudWatch (/k8s/webapp/audit) without flooding.
+# the security-relevant events and drops the routine read noise (get/list/watch
+# from ESO/Argo/Gatekeeper/k3s controllers), so the lab log shipper forwards it
+# to floci CloudWatch (/k8s/webapp/audit) without flooding. Rules are evaluated
+# top-down, first match wins — order matters.
 apiVersion: audit.k8s.io/v1
 kind: Policy
 omitStages:
   - RequestReceived
 rules:
-  # Shell / attach / port-forward into a pod — "who got a shell", at Request level
-  # so the command shows up.
+  # Shell / attach / port-forward into a pod — "who got a shell", at Request
+  # level so the command shows up.
   - level: Request
     resources:
       - group: ""
         resources: ["pods/exec", "pods/attach", "pods/portforward"]
 
-  # Workload lifecycle: rollout restarts, deletes, scaling, deploys.
+  # Secret reads in the webapp namespace ONLY — the credential-access signal we
+  # want to keep (metadata only). Must precede the read-noise drop below.
+  - level: Metadata
+    verbs: ["get", "list"]
+    namespaces: ["webapp"]
+    resources:
+      - group: ""
+        resources: ["secrets"]
+
+  # Drop the high-volume read noise: every get/list/watch from the controllers
+  # (ESO 1-min refresh, Argo/Gatekeeper watches, k3s reconcilers). This is what
+  # was flooding the shipper. Writes are still fully audited by the rules below.
+  - level: None
+    verbs: ["get", "list", "watch"]
+
+  # Workload lifecycle writes: rollout restarts, deletes, scaling, deploys.
   - level: Metadata
     verbs: ["create", "delete", "patch", "update", "deletecollection"]
     resources:
@@ -23,8 +40,7 @@ rules:
         resources: ["deployments", "daemonsets", "statefulsets", "replicasets"]
 
   # Pod events (OOMKilled, BackOff, Killing, Started, Unhealthy) in the webapp
-  # namespace — this is how crash-restarts show up. Request level to keep the
-  # reason/message.
+  # namespace — how crash-restarts show up. Request level to keep the message.
   - level: Request
     verbs: ["create", "patch"]
     namespaces: ["webapp"]
@@ -34,14 +50,16 @@ rules:
       - group: "events.k8s.io"
         resources: ["events"]
 
-  # Secret / ConfigMap access — metadata only, never log secret values.
+  # Secret / ConfigMap WRITES anywhere — metadata only, never log values.
   - level: Metadata
+    verbs: ["create", "update", "patch", "delete", "deletecollection"]
     resources:
       - group: ""
         resources: ["secrets", "configmaps"]
 
-  # RBAC changes.
+  # RBAC changes (writes).
   - level: Metadata
+    verbs: ["create", "update", "patch", "delete"]
     resources:
       - group: "rbac.authorization.k8s.io"
         resources: ["*"]

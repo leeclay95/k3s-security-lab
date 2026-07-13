@@ -50,28 +50,45 @@ spec:
       containers:
         - name: shipper
           image: amazon/aws-cli:latest
-          command: ["/bin/sh", "-c"]
+          command: ["/bin/bash", "-c"]
           args:
             - |
               set -u
               EP="http://host.k3d.internal:4566"
               STREAM="${NODE_NAME:-webapp-node}"
               export HOME=/tmp
-              # ship <glob-or-file> <log-group>: create the group/stream, then
-              # tail the path(s) and PutLogEvents each line. Runs per source so
-              # app and audit are shipped concurrently.
+              MAX=100       # flush a batch after this many lines
+              INTERVAL=5    # ...or after this many seconds, whichever comes first
+              # ship <glob-or-file> <log-group>: tail the source and PutLogEvents
+              # in BATCHES. The previous version launched one aws CLI (a cold
+              # Python interpreter, ~0.2-0.4s CPU) per log line, which pinned the
+              # CPU limit once the audit stream was added. Batching cuts that to
+              # ~one aws process per MAX lines / INTERVAL seconds.
               ship() {
-                src="$1"
-                grp="$2"
+                local src="$1" grp="$2" buf="" n=0 rc ts ev esc line
                 aws --endpoint-url "$EP" --region us-east-1 logs create-log-group  --log-group-name "$grp" 2>/dev/null || true
                 aws --endpoint-url "$EP" --region us-east-1 logs create-log-stream --log-group-name "$grp" --log-stream-name "$STREAM" 2>/dev/null || true
-                echo "shipping $src -> $grp (stream $STREAM)"
-                tail -q -n 5 -F $src 2>/dev/null | while IFS= read -r line; do
-                  [ -z "$line" ] && continue
-                  ts="$(date +%s)000"
-                  esc="$(printf '%s' "$line" | sed 's/\\/\\\\/g; s/"/\\"/g')"
-                  aws --endpoint-url "$EP" --region us-east-1 logs put-log-events --log-group-name "$grp" --log-stream-name "$STREAM" --log-events "[{\"timestamp\":${ts},\"message\":\"${esc}\"}]" >/dev/null 2>&1 || true
-                done
+                echo "shipping $src -> $grp (stream $STREAM); batched <=$MAX lines / ${INTERVAL}s"
+                flush() {
+                  [ "$n" -eq 0 ] && return
+                  aws --endpoint-url "$EP" --region us-east-1 logs put-log-events --log-group-name "$grp" --log-stream-name "$STREAM" --log-events "[$buf]" >/dev/null 2>&1 || true
+                  buf=""; n=0
+                }
+                while true; do
+                  if IFS= read -r -t "$INTERVAL" line; then
+                    [ -z "$line" ] && continue
+                    printf -v ts '%(%s)T' -1; ts="${ts}000"
+                    esc="${line//\\/\\\\}"; esc="${esc//\"/\\\"}"; esc="${esc//$'\t'/ }"
+                    ev="{\"timestamp\":${ts},\"message\":\"${esc}\"}"
+                    if [ "$n" -gt 0 ]; then buf="${buf},${ev}"; else buf="$ev"; fi
+                    n=$((n + 1))
+                    [ "$n" -ge "$MAX" ] && flush
+                  else
+                    rc=$?
+                    flush                          # timeout or EOF -> send what we have
+                    [ "$rc" -le 128 ] && break     # rc<=128 = EOF (tail exited); >128 = read timeout, keep going
+                  fi
+                done < <(tail -q -n 0 -F $src 2>/dev/null)
               }
               ship "/var/log/pods/webapp_*/*/*.log" "/k8s/webapp/app" &
               ship "/var/log/k3s-audit.log" "/k8s/webapp/audit" &

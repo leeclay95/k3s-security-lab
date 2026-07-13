@@ -99,8 +99,11 @@ security-relevant events and drops routine read noise:
   daemonsets, statefulsets, replicasets (rollout restarts, deletes, scaling)
 - **webapp pod events** — OOMKilled/BackOff/Killing/Started/Unhealthy in the
   `webapp` namespace (how crash-restarts surface)
-- **secret / configmap access** at `Metadata` level (never the values)
-- **RBAC changes**
+- **secret reads in the `webapp` namespace** at `Metadata` level (the
+  credential-access signal; never the values)
+- **secret / configmap writes** and **RBAC changes** at `Metadata` level
+- **dropped:** all other `get`/`list`/`watch` reads — the high-volume noise from
+  ESO/Argo/Gatekeeper/k3s controllers that otherwise floods the shipper
 - everything else: `level: None`
 
 ## Design notes
@@ -119,9 +122,13 @@ security-relevant events and drops routine read noise:
   `charts/webapp` + `terraform/`, not `logging/`. A node log collector inherently
   needs a `hostPath` mount (kubesec penalizes that), which is why it's a
   documented platform component rather than part of the gated chart.
-- **Lab-grade.** It spawns one `aws` process per log line, so it's fine for demo
-  traffic, not high throughput. A production setup would use Fluent Bit or Vector
-  with batching (Vector's `aws_cloudwatch_logs` sink takes a full
+- **Lab-grade, but batched.** It buffers up to 100 lines / 5s and sends each
+  batch in a single `aws logs put-log-events`, so it launches ~one `aws` process
+  per batch instead of one per line. The original per-line version spawned a cold
+  Python `aws` CLI (~0.2–0.4s CPU) *per log line* and pinned its 200m CPU limit
+  once the audit stream was added (~4 procs/sec, throttled); batching dropped it
+  to well under the limit. Still not a high-throughput agent — a production setup
+  would use Fluent Bit or Vector (Vector's `aws_cloudwatch_logs` sink takes a full
   `endpoint = "http://host.k3d.internal:4566"`, which the C-based Fluent Bit
   plugin can't, since it assumes TLS/443).
 
