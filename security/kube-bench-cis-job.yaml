@@ -1,0 +1,53 @@
+# kube-bench CIS benchmark scan (k3s-native), standard TEXT output.
+#
+# Read-only assessment of the cluster/node against the CIS Kubernetes Benchmark.
+# Results (PASS/FAIL/WARN/INFO + remediation + summary) go to the pod logs:
+#   kubectl --context k3d-webapp-test logs job/kube-bench-cis -n default
+#
+# Re-run:
+#   kubectl --context k3d-webapp-test delete job kube-bench-cis -n default --ignore-not-found
+#   kubectl --context k3d-webapp-test apply -f security/kube-bench-cis-job.yaml
+#
+# Notes:
+# - Runs in `default` (not `webapp`) so the webapp-scoped Gatekeeper constraints
+#   don't block the required hostPID/hostPath.
+# - Runs as root: it reads the root-owned k3s/kubelet config files.
+# - Uses k3s-cis-1.24 (accurate k3s paths). For DISA STIG V-IDs instead, swap the
+#   benchmark to eks-stig-kubernetes-v1r6 (see docs/cis-benchmark.md).
+# - ttlSecondsAfterFinished cleans the completed Job up after an hour.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kube-bench-cis
+  namespace: default
+  labels:
+    app: kube-bench-cis
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: kube-bench-cis
+    spec:
+      hostPID: true
+      restartPolicy: Never
+      containers:
+        - name: kube-bench
+          image: docker.io/aquasec/kube-bench:latest
+          # Standard text output (no --json): PASS/FAIL/WARN/INFO + remediations.
+          command: ["kube-bench", "run", "--benchmark", "k3s-cis-1.24"]
+          volumeMounts:
+            - name: var-lib
+              mountPath: /var/lib
+              readOnly: true
+            - name: etc
+              mountPath: /etc
+              readOnly: true
+      volumes:
+        - name: var-lib
+          hostPath:
+            path: /var/lib
+        - name: etc
+          hostPath:
+            path: /etc
