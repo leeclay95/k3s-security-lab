@@ -37,6 +37,7 @@ helper scripts are all created by the deploy, not tied to any account.
 | Layer | Tool | What it enforces |
 |---|---|---|
 | Static analysis | kubesec | Scores manifests before anything is deployed — CI gate |
+| Image scanning | trivy | Image CVE-scanned in CI — fixable HIGH/CRITICAL block the merge |
 | Admission control | OPA Gatekeeper | Cluster refuses insecure pods at apply time, no bypass possible |
 | Secrets management | External Secrets Operator | Secrets never in manifests or Git; injected at runtime from Secrets Manager |
 | IaC security | tfsec | Terraform scanned for misconfigurations — 0 HIGH findings |
@@ -125,6 +126,7 @@ terraform       # >= 1.3
 helm            # Helm 3
 kubesec         # Static manifest scanner
 tfsec           # Terraform static analysis
+trivy           # Container image CVE scanner (security-gates.sh Gate 4)
 aws             # AWS CLI v2 (uses AWS_ENDPOINT_URL env var for LocalStack)
 
 # LocalStack running with these services
@@ -297,6 +299,28 @@ All four original HIGH findings resolved:
 | IAM wildcard resource | Exact secret ARNs via data source — no `webapp/*` glob |
 | SNS unencrypted | `kms_master_key_id` on topic |
 | RDS storage unencrypted | `storage_encrypted = true` with KMS CMK |
+
+## Image CVE Scanning (trivy)
+
+`scripts/security-gates.sh` Gate 4 (and the CI workflow) runs `trivy image`
+against the container image and **fails on fixable HIGH/CRITICAL CVEs**:
+
+```
+trivy image --severity HIGH,CRITICAL --ignore-unfixed docker.io/nginxinc/nginx-unprivileged:1.27
+```
+
+The deployed image is a floci/LocalStack ECR ref that CI can't reach, so the gate
+scans the **identical upstream image it's retagged from** (the ECR copy is a
+pull+tag+push with no rebuild — byte-for-byte the same layers). Override the
+target/threshold with `SCAN_IMAGE`, `TRIVY_SEVERITY`, `TRIVY_IGNORE_UNFIXED`.
+Evidence (`trivy.json` + `trivy.txt`) lands under `security/reports/<ts>/`. This
+is the enforced side of RA-5 / SI-2 — see [`security/COMPLIANCE.md`](security/COMPLIANCE.md).
+
+The pinned lab image carries known base-OS CVEs (Debian libraries), so those are
+**explicitly risk-accepted** in [`security/trivy/.trivyignore.yaml`](security/trivy/.trivyignore.yaml) —
+each CVE ID with a justification and an **expiry date**, not a blanket disable.
+The threshold stays strict: any *new* or unlisted CVE still fails the gate, and
+each acceptance expires to force a re-review or an image bump (the real fix).
 
 ---
 

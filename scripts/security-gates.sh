@@ -8,12 +8,15 @@
 #   Gate 2  tfsec    — scan all terraform/ roots at --minimum-severity HIGH.
 #   Gate 3  conftest — OPA policies (security/policy) mirroring the Gatekeeper
 #                      constraints, run against each rendered chart.
+#   Gate 4  trivy    — CVE scan of the container image, fail on fixable
+#                      HIGH/CRITICAL vulnerabilities (RA-5 / SI-2).
 #
 # Both install paths are covered: values.yaml (Helm-hook path, renders the
 # crd-wait Job) and values-argocd.yaml (Argo GitOps path).
 #
 # Overrides via env: CHART, CHART_VALUES (space-separated), POLICY_DIR, TF_DIR,
-# TF_MIN_SEVERITY, KUBESEC_MIN_SCORE, OUT_DIR.
+# TF_MIN_SEVERITY, KUBESEC_MIN_SCORE, SCAN_IMAGE, TRIVY_SEVERITY,
+# TRIVY_IGNORE_UNFIXED, OUT_DIR.
 set -uo pipefail
 
 cd "$(dirname "$0")/.."
@@ -24,6 +27,18 @@ POLICY_DIR="${POLICY_DIR:-security/policy}"
 TF_DIR="${TF_DIR:-terraform}"
 TF_MIN_SEVERITY="${TF_MIN_SEVERITY:-HIGH}"
 KUBESEC_MIN_SCORE="${KUBESEC_MIN_SCORE:-0}"
+# The deployed image is a floci/LocalStack ECR ref that is unreachable outside
+# the lab (and CI), so scan the identical upstream image it is retagged from
+# (see scripts/ensure-webapp-image.sh + terraform/infra/ecr.tf — pull+tag+push,
+# no build, so the content matches byte-for-byte).
+SCAN_IMAGE="${SCAN_IMAGE:-docker.io/nginxinc/nginx-unprivileged:1.27}"
+TRIVY_SEVERITY="${TRIVY_SEVERITY:-HIGH,CRITICAL}"
+# Only gate on vulnerabilities that have a fix available (an upgrade you can
+# actually ship); set to 0 to also fail on un-fixable CVEs.
+TRIVY_IGNORE_UNFIXED="${TRIVY_IGNORE_UNFIXED:-1}"
+# Documented risk-acceptance register: known/accepted CVE IDs (with expiry) that
+# should not fail the gate. NEW CVEs still fail. See the file's header comment.
+TRIVY_IGNOREFILE="${TRIVY_IGNOREFILE:-security/trivy/.trivyignore.yaml}"
 
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT="${OUT_DIR:-security/reports}/${TS}"
@@ -37,6 +52,7 @@ log() { echo "$@" | tee -a "$SUMMARY"; }
 fail_kubesec=0
 fail_tfsec=0
 fail_conftest=0
+fail_trivy=0
 RENDERS=()
 
 log "=================================================================="
@@ -127,13 +143,43 @@ except Exception: print("?")' "$OUT/conftest-${base}.json" 2>/dev/null)"
 done
 [ "${#RENDERS[@]}" -eq 0 ] && { log "  [SKIP]  no rendered manifests"; fail_conftest=1; }
 
+# ---- Gate 4: trivy image CVE scan ----------------------------------------
+log ""
+log "── Gate 4: trivy (image CVEs >= $TRIVY_SEVERITY) ─────────────────"
+if ! command -v trivy >/dev/null 2>&1; then
+	log "  [ERROR] trivy not installed — cannot scan $SCAN_IMAGE"
+	fail_trivy=1
+else
+	tflags=(--severity "$TRIVY_SEVERITY" --scanners vuln --no-progress)
+	[ "$TRIVY_IGNORE_UNFIXED" = "1" ] && tflags+=(--ignore-unfixed)
+	if [ -f "$TRIVY_IGNOREFILE" ]; then
+		tflags+=(--ignorefile "$TRIVY_IGNOREFILE")
+		log "  [note]  risk-acceptance register active: $TRIVY_IGNOREFILE"
+	fi
+	# Capture full JSON evidence first (exit-code 0 so the report always writes).
+	trivy image "${tflags[@]}" --format json --output "$OUT/trivy.json" "$SCAN_IMAGE" > "$OUT/trivy.log" 2>&1
+	# Human-readable table + the gating run (non-zero exit on any matching vuln).
+	trivy image "${tflags[@]}" --exit-code 1 --format table "$SCAN_IMAGE" > "$OUT/trivy.txt" 2>> "$OUT/trivy.log"
+	trivy_rc=$?
+	vulns="$(python3 -c 'import json,sys
+try: print(sum(len(r.get("Vulnerabilities") or []) for r in (json.load(open(sys.argv[1])).get("Results") or [])))
+except Exception: print("?")' "$OUT/trivy.json" 2>/dev/null)"
+	if [ "$trivy_rc" -ne 0 ]; then
+		log "  [FAIL]  $SCAN_IMAGE: $vulns vuln(s) at >= $TRIVY_SEVERITY (see trivy.txt / trivy.json)"
+		fail_trivy=1
+	else
+		log "  [PASS]  $SCAN_IMAGE: no gating vuln(s) at >= $TRIVY_SEVERITY"
+	fi
+fi
+
 # ---- Verdict --------------------------------------------------------------
 log ""
 log "=================================================================="
-overall=$((fail_kubesec + fail_tfsec + fail_conftest))
+overall=$((fail_kubesec + fail_tfsec + fail_conftest + fail_trivy))
 log " kubesec:  $([ $fail_kubesec -eq 0 ] && echo PASS || echo FAIL)"
 log " tfsec:    $([ $fail_tfsec  -eq 0 ] && echo PASS || echo FAIL)"
 log " conftest: $([ $fail_conftest -eq 0 ] && echo PASS || echo FAIL)"
+log " trivy:    $([ $fail_trivy -eq 0 ] && echo PASS || echo FAIL)"
 log " OVERALL:  $([ $overall -eq 0 ] && echo PASS || echo FAIL)   evidence: $OUT"
 log "=================================================================="
 exit $([ $overall -eq 0 ] && echo 0 || echo 1)
