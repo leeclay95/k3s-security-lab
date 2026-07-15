@@ -1,0 +1,11 @@
+# k3s node config, mounted into the server node at /etc/rancher/k3s/config.yaml
+# by cluster.tf (same pattern as audit-policy.yaml). k3s reads this automatically.
+#
+# Lower the kubelet hard-eviction floor so the node tolerates the transient
+# disk spike when Trivy Operator scan jobs download the vulnerability DB
+# (~1-2GB) before scanning. The default imagefs.available<15% is too aggressive
+# on a small/disk-tight k3d node: a normal scan dips below it and the node goes
+# into disk-pressure, evicting workloads. 5% leaves ample headroom.
+# See docs/trivy-operator.md.
+kubelet-arg:
+  - "eviction-hard=imagefs.available<5%,nodefs.available<5%,memory.available<100Mi,nodefs.inodesFree<5%,imagefs.inodesFree<5%"

@@ -1,12 +1,14 @@
 # Trivy Operator — continuous, in-cluster vulnerability + config scanning.
 #
-# OBSERVE-ONLY: the operator writes VulnerabilityReport / ConfigAuditReport /
-# ExposedSecretReport / RbacAssessmentReport CRDs and never touches admission.
-# No workload is ever blocked. This is the RUNTIME twin of the CI-time trivy
-# gate (scripts/security-gates.sh Gate 4): the gate blocks a bad image at PR
-# time, the operator just shows what is actually live in the cluster.
+# OBSERVE-ONLY: it writes VulnerabilityReport / ConfigAuditReport /
+# ExposedSecretReport / RbacAssessmentReport CRDs and never touches admission,
+# so no workload is blocked. It is the RUNTIME twin of the CI-time trivy gate
+# (scripts/security-gates.sh Gate 4): the gate blocks a bad image at PR time,
+# the operator shows what is live in the cluster.
 #
-# See docs/trivy-operator.md for how it works and the verifying commands.
+# Scan jobs download the vuln DB (~1-2GB) before scanning — the kubelet
+# eviction floor is lowered in k3s-config.yaml so a small node tolerates that
+# spike. See docs/trivy-operator.md for the full flow (incl. generating a report).
 
 resource "helm_release" "trivy_operator" {
   depends_on       = [time_sleep.cluster_ready]
@@ -25,7 +27,7 @@ resource "helm_release" "trivy_operator" {
     targetNamespaces = "webapp"
 
     operator = {
-      # Default is 10 — a burst of scan jobs can peg CPU on a laptop k3d node.
+      # Default is 10 — a burst of scan jobs can spike CPU/disk on a small node.
       scanJobsConcurrentLimit      = 1
       vulnerabilityScannerEnabled  = true
       configAuditScannerEnabled    = true
@@ -36,7 +38,6 @@ resource "helm_release" "trivy_operator" {
     trivyOperator = {
       # KEEP false. Scan jobs then run in trivy-system, NOT webapp, so the
       # deny-mode Gatekeeper constraints (scoped to webapp) can't reject them.
-      # Set true and scans of webapp get DENIED for missing runAsNonRoot/limits.
       scanJobsInSameNamespace = false
     }
 
