@@ -31,12 +31,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install kubesec, tfsec, conftest
+      - name: Install kubesec, tfsec, conftest, trivy
         run: |
           set -euo pipefail
           KUBESEC_VERSION=2.14.0
           TFSEC_VERSION=1.28.14
           CONFTEST_VERSION=0.50.0
+          TRIVY_VERSION=0.72.0
           bindir="$HOME/.local/bin"
           mkdir -p "$bindir"
           echo "$bindir" >> "$GITHUB_PATH"
@@ -46,10 +47,13 @@ jobs:
           curl -sSL -o "$bindir/tfsec" "https://github.com/aquasecurity/tfsec/releases/download/v${TFSEC_VERSION}/tfsec-linux-amd64"
           curl -sSL "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz" | tar -xz -C "$tmp" conftest
           mv "$tmp/conftest" "$bindir/conftest"
-          chmod +x "$bindir"/kubesec "$bindir"/tfsec "$bindir"/conftest
+          curl -sSL "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz" | tar -xz -C "$tmp" trivy
+          mv "$tmp/trivy" "$bindir/trivy"
+          chmod +x "$bindir"/kubesec "$bindir"/tfsec "$bindir"/conftest "$bindir"/trivy
           kubesec version
           tfsec --version
           conftest --version
+          trivy --version
 
       - name: Run security gates
         run: ./scripts/security-gates.sh
