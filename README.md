@@ -322,6 +322,56 @@ each CVE ID with a justification and an **expiry date**, not a blanket disable.
 The threshold stays strict: any *new* or unlisted CVE still fails the gate, and
 each acceptance expires to force a re-review or an image bump (the real fix).
 
+### Demo: make Gate 4 fail, then pass
+
+Prove the gate actually bites by pulling one CVE out of the register, watching CI
+go red, then restoring it. `CVE-2026-31789` (libssl3, CRITICAL) is used here —
+swap in any ID from `.trivyignore.yaml`.
+
+```bash
+git checkout main && git pull
+git checkout -b test/trivy-fail-demo
+
+# 1. Remove one CVE's block from the register (from its "- id:" line to the next entry)
+python3 - <<'PY'
+import re
+cve = "CVE-2026-31789"
+p = "security/trivy/.trivyignore.yaml"
+lines = open(p).read().splitlines(keepends=True)
+out, i = [], 0
+while i < len(lines):
+    if re.match(rf'^  - id:\s*{re.escape(cve)}\s*$', lines[i]):
+        i += 1
+        while i < len(lines) and not lines[i].startswith('  - id:'):
+            i += 1
+        continue
+    out.append(lines[i]); i += 1
+open(p, "w").writelines(out)
+print("removed", cve)
+PY
+
+# 2. Confirm locally the gate now FAILS (note --exit-code 1 — without it trivy always exits 0)
+trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --ignorefile security/trivy/.trivyignore.yaml docker.io/nginxinc/nginx-unprivileged:1.27; echo "exit=$?"   # exit=1, CVE reappears
+
+# 3. Push + open a PR — watch security-gates go RED
+git commit -am "test: remove CVE-2026-31789 to demo Gate 4 failure"
+git push -u origin test/trivy-fail-demo
+gh pr create --fill
+gh pr checks --watch     # FAILS (this command also exits non-zero — that's the red gate, not an error)
+
+# 4. Restore the CVE, push again — watch it go GREEN
+git checkout main -- security/trivy/.trivyignore.yaml
+git commit -am "test: restore CVE-2026-31789 — Gate 4 green again"
+git push
+gh pr checks --watch     # PASSES
+
+# 5. Discard the demo (main never changes) — or merge it if you want it in history
+gh pr close test/trivy-fail-demo --delete-branch && git checkout main
+```
+
+> The whole local run is available via `./scripts/security-gates.sh`, which runs
+> trivy with `--exit-code 1` and flips **Gate 4** to FAIL/PASS accordingly.
+
 ---
 
 ## Testing Security Controls
