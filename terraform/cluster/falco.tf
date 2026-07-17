@@ -49,5 +49,21 @@ resource "helm_release" "falco" {
       requests = { cpu = "100m", memory = "256Mi" }
       limits   = { cpu = "500m", memory = "512Mi" }
     }
+
+    # The default ruleset logs the shell *spawn* ("Terminal shell in container"),
+    # not each command typed after it. This rule logs every process in the webapp
+    # namespace, so the commands run after a kubectl exec are captured — the whole
+    # point of adding Falco (the API-server audit log can't see them). Noisy by
+    # design; tune/scope it for real use.
+    customRules = {
+      "webapp-commands.yaml" = <<-EOT
+        - rule: Command run in webapp container
+          desc: Log every process spawned inside a webapp-namespace container.
+          condition: spawned_process and container and k8s.ns.name = webapp
+          output: "Command in webapp container (cmd=%proc.cmdline pod=%k8s.pod.name user=%user.name parent=%proc.pname)"
+          priority: NOTICE
+          tags: [webapp, process, mitre_execution, T1059]
+      EOT
+    }
   })]
 }
