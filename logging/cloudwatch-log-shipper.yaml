@@ -2,11 +2,13 @@
 # terraform/infra actually fill up. A hardened aws-cli DaemonSet that tails the
 # node's log files and PutLogEvents them to floci at host.k3d.internal:4566.
 #
-# Two streams:
+# Three streams:
 #   /var/log/pods/webapp_*/*/*.log  -> /k8s/webapp/app    (nginx access/error)
 #   /var/log/k3s-audit.log          -> /k8s/webapp/audit  (API-server audit:
 #                                       exec/attach, restarts, deploys, secret
 #                                       access, RBAC, webapp pod events)
+#   /var/log/pods/falco_*/falco/*.log -> /k8s/falco       (Falco runtime alerts:
+#                                       shell-in-container, exec, sensitive reads)
 #
 # Lives in its OWN `logging` namespace on purpose: the webapp-scoped Gatekeeper
 # constraints don't apply here, and it's outside the Argo-managed webapp chart.
@@ -92,6 +94,7 @@ spec:
               }
               ship "/var/log/pods/webapp_*/*/*.log" "/k8s/webapp/app" &
               ship "/var/log/k3s-audit.log" "/k8s/webapp/audit" &
+              ship "/var/log/pods/falco_*/falco/*.log" "/k8s/falco" &
               wait
           env:
             - name: NODE_NAME
