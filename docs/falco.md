@@ -53,29 +53,33 @@ app and audit streams (see [`logging/cloudwatch-log-shipper.yaml`](../logging/cl
 
 ### 1. Trigger a detection
 
-The default **"Terminal shell in container"** rule needs a TTY, so exec with `-it`:
+Run some commands inside the webapp container. No TTY needed — the custom
+**"Command run in webapp container"** rule fires on *every* process:
 
 ```bash
 KC="kubectl --context k3d-webapp-test"
 POD=$($KC get pods -n webapp -o jsonpath='{.items[0].metadata.name}')
-$KC exec -it -n webapp "$POD" -- sh -c 'id; cat /etc/hostname'
+$KC exec -n webapp "$POD" -- sh -c 'id; cat /etc/hostname; ls /'
 ```
 
 ### 2. See it in Falco (live, in-cluster)
 
 ```bash
-kubectl --context k3d-webapp-test logs -n falco -l app.kubernetes.io/name=falco -c falco -f | grep -i 'shell\|Warning\|Notice'
+kubectl --context k3d-webapp-test logs -n falco -l app.kubernetes.io/name=falco -c falco -f | grep --line-buffered -iE 'webapp|shell'
 ```
 
-You'll get a JSON alert: rule `Terminal shell in container`, MITRE tag `T1059`,
-`k8s.ns.name=webapp`, and the exact `proc.cmdline` (`sh -c id; cat /etc/hostname`).
+You get one JSON alert **per command** — rule `Command run in webapp container`,
+`k8s.ns.name=webapp`, and the exact `proc.cmdline` for `sh -c ...`, `id`,
+`cat /etc/hostname`, `ls /` — plus a `Terminal shell in container` alert if you
+used `-it`.
 
 ### 3. See it shipped to floci CloudWatch (`/k8s/falco`)
 
 ```bash
 export AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_EC2_METADATA_DISABLED=true; unset AWS_PROFILE
 EP="aws --endpoint-url=http://localhost:4566 --region us-east-1 --no-cli-pager"
-$EP logs filter-log-events --log-group-name /k8s/falco --query 'reverse(events)[].message' --output text | tr '\t' '\n' | python3 -c 'import sys,json,re
+sleep 12   # shipper batches every ~5s
+$EP logs filter-log-events --log-group-name /k8s/falco --start-time $(( ($(date +%s)-300)*1000 )) --query 'reverse(events)[].message' --output text | tr '\t' '\n' | python3 -c 'import sys,json,re
 for l in sys.stdin:
     m = re.sub(r"^\S+ \w+ \w ", "", l.strip())   # strip CRI prefix: <ts> stdout F
     try: d = json.loads(m)
@@ -85,21 +89,41 @@ for l in sys.stdin:
 '
 ```
 
-Example output:
+Example output — every command, not just the shell:
 ```
-2026-07-17T23:01:30 | Terminal shell in container | webapp scan-demo-xxxx | sh -c cat /etc/hostname; id
+2026-07-17T23:25:11 | Command run in webapp container | webapp webapp-xxxx | id
+2026-07-17T23:25:11 | Command run in webapp container | webapp webapp-xxxx | cat /etc/hostname
+2026-07-17T23:25:11 | Command run in webapp container | webapp webapp-xxxx | ls /
 ```
 
-> No TTY? A non-interactive `kubectl exec pod -- ls` won't trip the shell rule
+> **If `/k8s/falco` is empty right after a Falco restart:** the shipper's `tail -F`
+> binds to the Falco pod's log path at startup, so after Falco is re-rolled
+> (upgrade/reboot) give the shipper a nudge: `kubectl rollout restart
+> ds/cloudwatch-log-shipper -n logging`. `make reboot` already re-nudges Falco.
+
+> No TTY? A non-interactive `kubectl exec pod -- ls` won't trip the *shell* rule
 > (it needs `proc.tty != 0`). Use `-it`, or `script -qec "kubectl exec -it ..." /dev/null`
 > to force a pty from a non-interactive shell.
 
-### Other things Falco catches out of the box
+### Rules
 
-Reading sensitive files (`/etc/shadow`), writing below `/etc` or binary dirs,
-package-manager launches in a container, outbound connections to unexpected
-ports — all in the default ruleset. Add your own rules by mounting a
-`custom_rules.yaml` (chart value `customRules`).
+Two things fire on exec activity here:
+
+| Rule | Fires on | Source |
+| --- | --- | --- |
+| `Terminal shell in container` | a shell **spawn** with a TTY | Falco default ruleset |
+| `Command run in webapp container` | **every process** in the `webapp` namespace | baked into `falco.tf` (`customRules`) |
+
+The default rule alone logs only that a shell opened — **not the commands typed
+after it**, which is the whole reason Falco is here. The custom rule
+(`spawned_process and container and k8s.ns.name = webapp`) closes that: one alert
+per command. It's **noisy by design** (every exec in webapp); for real use, scope
+it further or exclude known process names. Edit it in
+[`terraform/cluster/falco.tf`](../terraform/cluster/falco.tf).
+
+The default ruleset also catches: reading sensitive files (`/etc/shadow`),
+writing below `/etc` or binary dirs, package-manager launches, outbound
+connections to unexpected ports.
 
 ## Where this fits the security story
 
