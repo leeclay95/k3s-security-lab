@@ -10,6 +10,7 @@
 #   4. host.k3d.internal is stripped from CoreDNS -> ESO can't reach floci
 #      ("dial tcp: lookup host.k3d.internal ... i/o timeout")
 #   5. the webapp image can drop out of the node's containerd -> ImagePullBackOff
+#   6. debugfs is unmounted -> Falco's BPF probe can't read syscall tracepoints
 #
 # This script checks each, reports what it finds, and fixes it. Idempotent and
 # safe to run anytime (not just after a reboot). It does NOT touch Terraform
@@ -68,6 +69,23 @@ else
 		ok "flannel recovered"
 	else
 		warn "flannel still missing — inspect 'docker logs $NODE'"
+	fi
+fi
+
+# 3b. debugfs for Falco's BPF probe -----------------------------------------
+# k3d nodes don't mount debugfs, and it's lost on restart (like flannel above).
+# Without it Falco's modern-eBPF probe can't resolve syscall tracepoint IDs and
+# captures nothing. Harmless no-op if Falco isn't installed.
+step "debugfs mount (Falco runtime probe)"
+if docker exec "$NODE" mountpoint -q /sys/kernel/debug 2>/dev/null; then
+	ok "debugfs mounted"
+else
+	fix "debugfs missing — mounting for Falco's BPF probe"
+	if docker exec "$NODE" mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null; then
+		ok "debugfs mounted"
+		$KUBECTL delete pod -n falco -l app.kubernetes.io/name=falco >/dev/null 2>&1 || true  # re-attach probe
+	else
+		warn "debugfs mount failed — Falco won't capture syscalls"
 	fi
 fi
 
